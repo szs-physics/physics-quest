@@ -1,11 +1,11 @@
 # 物理基礎クエスト
 
 物理基礎のテキストの穴埋めを、4択と○×で練習する Web アプリです。今は「熱とエネルギー」が入っています。
-公開先：https://sense-of-wonder-lab.github.io/physics-quest/
+公開先：https://szs-physics.github.io/physics-quest/
 
 - 登録なしで、すべてのモードを遊べます（ドリル・チャレンジ・RUSH・弱点特訓）。
 - ログインが必要なのは、全国ランキングに記録を載せるときだけです。
-- ログイン・ランキングは化学クエストと共通です（`/games/shared/leaderboard.js` を読み込んでいます）。
+- ログイン・ランキングは化学クエストと共通です（https://sense-of-wonder-lab.github.io/games/shared/leaderboard.js を読み込んでいます）。
 
 ## 中身
 
