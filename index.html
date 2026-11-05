@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#7c2d12">
+<meta name="description" content="物理基礎「熱とエネルギー」の穴埋めを4択で練習。登録なしで遊べます。">
+<title>物理基礎クエスト 〜熱とエネルギー〜</title>
+<script>document.documentElement.setAttribute('data-theme', localStorage.getItem('swTheme')||'default');</script>
+<style>
+:root{
+  --ink:#1e293b;
+  --bg:#f6f7f4;
+  --accent:#f59e0b;
+  --accent-deep:#d97706;
+  --blue:#2563eb;
+  --green:#16a34a;
+  --red:#dc2626;
+  --gray:#94a3b8;
+  --card:#ffffff;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overscroll-behavior:none}
+body{
+  font-family:Century,-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif;
+  background:var(--bg);color:var(--ink);
+  display:flex;flex-direction:column;height:100dvh;
+}
+header{
+  background:#1e3a8a;color:#fff;padding:8px 12px;
+  padding-top:calc(8px + env(safe-area-inset-top));
+  flex:none;display:flex;align-items:center;gap:10px;
+}
+header .title{font-weight:700;font-size:15px;letter-spacing:.02em;flex:1}
+header .sub{font-size:10px;opacity:.75}
+.questSelect{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:8px;font-weight:700;font-size:13px;padding:4px 6px;font-family:inherit}
+header .accountBtnWrap{margin-left:0}
+.questSelect option{color:var(--ink)}
+.backrow{margin-bottom:10px}
+.backbtn{border:none;background:none;color:var(--blue);font-size:13px;font-weight:700;padding:4px 0}
+main{flex:1;position:relative;overflow:hidden}
+.view{position:absolute;inset:0;display:none;overflow-y:auto}
+.view.active{display:block}
+.panel{height:100%;padding:16px 14px calc(20px + env(safe-area-inset-bottom));max-width:620px;margin:0 auto}
+.panel h2{font-size:17px;margin:6px 0 12px}
+.card-ui{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:16px;margin-bottom:12px}
+.bigbtn{display:block;width:100%;padding:14px;border-radius:14px;border:none;background:var(--blue);color:#fff;font-size:15px;font-weight:700;margin-top:10px}
+.bigbtn.secondary{background:#fff;color:var(--blue);border:2px solid var(--blue)}
+.bigbtn.amber{background:var(--accent-deep)}
+.bigbtn:disabled{background:#cbd5e1;color:#f1f5f9;border:none}
+.muted{color:#64748b;font-size:12px;line-height:1.6}
+nav{flex:none;display:flex;background:#fff;border-top:1px solid #e2e8f0;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;padding:8px 0 6px;border:none;background:none;font-size:11px;color:#94a3b8;display:flex;flex-direction:column;align-items:center;gap:2px;position:relative}
+nav button .ico{font-size:20px;line-height:1}
+nav button.active{color:var(--blue);font-weight:700}
+.badge{position:absolute;top:2px;right:calc(50% - 24px);background:var(--red);color:#fff;border-radius:9px;font-size:10px;min-width:17px;height:17px;line-height:17px;padding:0 4px;font-weight:700}
+/* 単元一覧(デッキ選択) */
+.decklist{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.deckbtn{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:12px 14px;border-radius:12px;border:2px solid #e2e8f0;background:#fff;font-size:13.5px;font-weight:700;color:var(--ink)}
+.deckbtn:active{border-color:var(--accent)}
+.deckbtn.perfect{background:#f0fdf4;border-color:#86efac}
+.deckbtn-score{flex:none;text-align:right;font-size:19px;font-weight:800;color:var(--blue);white-space:nowrap}
+.deckbtn.perfect .deckbtn-score{color:var(--green)}
+.deckbtn-pct{display:block;font-size:11.5px;font-weight:600;color:#64748b}
+.pctv{color:var(--blue)}
+.pct0{color:var(--red)}
+.pct100{color:var(--green)}
+/* 正誤ポップアップ・自動送り */
+/* 自動・ポップアップ切替：画面上部に固定し、進捗表示と重ならないよう専用の行をとる（化学基礎クエストと共通）。セット選択画面では左に「🧠 暗記モード」 */
+.viewfx-toggles{position:sticky;top:0;z-index:5;display:flex;justify-content:flex-end;align-items:center;gap:6px;max-width:620px;margin:0 auto;padding:8px 14px 6px;background:var(--bg);pointer-events:none}
+.viewfx-toggles .viewfx-toggle{pointer-events:auto}
+.viewfx-title{margin-right:auto;font-size:17px;font-weight:700}
+#view-home .panel{padding-top:6px}
+.viewfx-toggle{background:rgba(255,255,255,.92);border:1.5px solid #e2e8f0;border-radius:8px;font-size:10.5px;font-weight:700;color:#64748b;padding:6px 9px;box-shadow:0 1px 3px rgba(0,0,0,.06);white-space:nowrap}
+.viewfx-toggle.on{background:#eff6ff;border-color:var(--blue);color:var(--blue)}
+/* 解説ボタン追加で4つ並ぶので、スマホ幅では少し詰める（タイトルを2行にしない） */
+@media(max-width:420px){.viewfx-title{font-size:15px;white-space:nowrap}.viewfx-toggles{gap:4px;padding-left:10px;padding-right:10px}.viewfx-toggle{padding:6px 5px;font-size:10px}}
+#answerFxPopup{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:70;pointer-events:none}
+#answerFxPopup.show{display:flex}
+.afx-box{text-align:center;animation:afxpop .32s cubic-bezier(.34,1.56,.64,1)}
+@keyframes afxpop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.afx-symbol{font-size:130px;font-weight:900;line-height:1;text-shadow:0 4px 18px rgba(0,0,0,.18)}
+.afx-symbol.ok{color:var(--green)}
+.afx-symbol.ng{color:var(--red)}
+.afx-sub{font-size:26px;margin-top:2px}
+.afx-confetti{font-size:30px;margin-top:4px;letter-spacing:6px}
+.fixed-next{position:fixed;left:14px;right:14px;width:auto;bottom:calc(10px + env(safe-area-inset-bottom));max-width:592px;margin:0 auto;z-index:60;box-shadow:0 4px 16px rgba(0,0,0,.18)}
+.fixed-back{position:fixed;right:14px;bottom:calc(72px + env(safe-area-inset-bottom));z-index:60;padding:8px 14px;border-radius:99px;border:2px solid var(--blue);background:#fff;color:var(--blue);font-size:12.5px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+/* 復習からもう一度 */
+.review-item.review-tap{cursor:pointer;display:flex;align-items:center;gap:6px}
+.review-item.review-tap:active{background:#f8fafc}
+.review-item.review-tap::after{content:'↻ もう一度';margin-left:auto;flex:none;font-size:11px;color:var(--blue);font-weight:700;white-space:nowrap}
+/* モーダル */
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:flex-end;justify-content:center;z-index:80}
+.modal.open{display:flex}
+.sheet{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:92dvh;overflow-y:auto;padding:16px 16px calc(18px + env(safe-area-inset-bottom));animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+@media(min-width:640px){
+  .modal{align-items:center;padding:20px}
+  .sheet{border-radius:20px;max-height:86vh}
+}
+.sheet h3{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.closex{margin-left:auto;border:none;background:#f1f5f9;border-radius:99px;width:30px;height:30px;font-size:14px;color:#64748b;flex:none}
+/* quiz */
+.qprompt{font-size:15px;font-weight:700;margin-bottom:14px;line-height:1.6;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px}
+.choices{display:flex;flex-direction:column;gap:9px}
+.choice{border:2px solid #e2e8f0;border-radius:14px;background:#fff;padding:12px 14px;font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.5;text-align:left}
+.choice:active{background:#f8fafc}
+.choice.correct{border-color:var(--green);background:#f0fdf4}
+.choice.wrong{border-color:var(--red);background:#fef2f2;animation:shake .3s}
+.choice.dim{opacity:.45}
+/* 一問多答 */
+.multi-hint{font-size:12px;font-weight:800;color:var(--blue);margin:-6px 0 8px}
+.choice.sel{border-color:var(--blue);background:#eff6ff;box-shadow:inset 0 0 0 2px var(--blue)}
+.choice.missed{border:2px dashed var(--green);background:#f0fdf4}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.explain{margin-top:12px;border-radius:14px;padding:12px;font-size:13px;line-height:1.7;display:none}
+.explain.ok{display:block;background:#f0fdf4;border:1.5px solid #86efac}
+.explain.ng{display:block;background:#fef2f2;border:1.5px solid #fca5a5}
+.explain .rname{font-weight:800;font-size:13.5px;margin-bottom:3px}
+.explain .note{margin-top:4px}
+/* challenge/drill common */
+.chal-head{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;margin-bottom:10px;color:#475569}
+.chal-timer{text-align:center;font-size:22px;font-weight:800;color:var(--blue);margin-bottom:8px}
+.chal-timer.urgent{color:var(--red)}
+.rankbig{font-size:64px;font-weight:900;text-align:center;line-height:1.1}
+.rank-SSS{background:linear-gradient(90deg,#f59e0b,#ec4899,#8b5cf6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.rank-SS{color:#7c3aed}.rank-S{color:#d97706}.rank-A{color:#dc2626}.rank-B{color:#2563eb}.rank-C{color:#16a34a}.rank-D{color:#64748b}
+.score-line{text-align:center;font-size:15px;font-weight:700;margin:6px 0 2px}
+.review-item{border-bottom:1px solid #f1f5f9;padding:9px 2px;font-size:12.5px;line-height:1.6}
+.review-item .ok{color:var(--green);font-weight:700}
+.review-item .ng{color:var(--red);font-weight:700}
+.scopebtns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.scopebtns button{flex:1;min-width:100px;padding:10px 4px;border-radius:12px;border:2px solid #e2e8f0;background:#fff;font-size:12.5px;font-weight:700;color:#475569}
+.scopebtns button.sel{border-color:var(--blue);color:var(--blue);background:#eff6ff}
+.decklist-head{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.sortmini{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:99px;border:1.5px solid #e2e8f0;background:#fff;color:#64748b}
+.sortmini.sel{border-color:var(--blue);color:var(--blue);background:#eff6ff}
+/* 構造式画像 */
+.qimg{display:block;max-width:100%;max-height:200px;margin:0 auto 10px;background:#fff;border-radius:10px;padding:6px}
+.choices.imgs{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.choices.imgs .choice{padding:8px;display:flex;align-items:center;justify-content:center;min-height:110px;background:#fff}
+.choices.imgs .choice img{display:block;max-width:100%;max-height:150px}
+.choices.imgs .choice.correct{background:#f0fdf4;box-shadow:inset 0 0 0 3px var(--green)}
+.choices.imgs .choice.wrong{background:#fef2f2;box-shadow:inset 0 0 0 3px var(--red)}
+html[data-theme="navy"] .choices.imgs .choice{background:#fff}
+.choices.imgs .choice.sel{background:#eff6ff;box-shadow:inset 0 0 0 4px var(--blue)}
+.choices.imgs .choice.missed{background:#f0fdf4;box-shadow:inset 0 0 0 3px var(--green)}
+/* toast */
+#toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(30,41,59,.92);color:#fff;font-size:12.5px;padding:9px 16px;border-radius:99px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:99;white-space:nowrap;max-width:92vw}
+#toast.show{opacity:1}
+.themeBtn{flex:none;margin-left:auto;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:50%;width:34px;height:34px;font-size:15px;display:flex;align-items:center;justify-content:center}
+/* ---- 深海ラボ・ネイビーテーマ（芳香族クエストと共通の配色） ---- */
+html[data-theme="navy"]{
+  --ink:#eaf6ff; --bg:#0a1220;
+  --accent:#4fd8ff; --accent-deep:#2dd4ff; --blue:#4fd8ff; --green:#3ee8a5;
+  --red:#ff6f6f; --gray:#7f97b3; --card:#132038;
+}
+html[data-theme="navy"] body{
+  background:
+    radial-gradient(900px 500px at 10% -10%,rgba(45,212,255,.14),transparent),
+    radial-gradient(700px 500px at 100% 15%,rgba(124,92,255,.12),transparent),
+    var(--bg);
+}
+html[data-theme="navy"] .viewfx-toggles{background:rgba(10,18,32,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+html[data-theme="navy"] header{background:linear-gradient(135deg,#0c1830,#122542);border-bottom:1px solid rgba(120,210,255,.25)}
+html[data-theme="navy"] .questSelect{background:rgba(255,255,255,.08);border-color:rgba(120,210,255,.3)}
+html[data-theme="navy"] .viewfx-toggle{background:rgba(19,32,56,.85);border-color:rgba(120,210,255,.25);color:#9db6d6}
+html[data-theme="navy"] .viewfx-toggle.on{background:rgba(79,216,255,.15);border-color:var(--accent);color:var(--accent)}
+html[data-theme="navy"] .muted{color:#9db6d6}
+html[data-theme="navy"] .card-ui{background:rgba(255,255,255,.05);border:1px solid rgba(120,210,255,.2);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);box-shadow:0 0 20px rgba(45,212,255,.08)}
+html[data-theme="navy"] .qprompt{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.14)}
+html[data-theme="navy"] .choice{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.16)}
+html[data-theme="navy"] .choice.correct{background:rgba(62,232,165,.15);border-color:var(--green)}
+html[data-theme="navy"] .choice.wrong{background:rgba(255,111,111,.15);border-color:var(--red)}
+html[data-theme="navy"] .choice.sel{background:rgba(45,212,255,.15);border-color:var(--accent)}
+html[data-theme="navy"] .choice.missed{background:rgba(62,232,165,.08);border-color:var(--green)}
+html[data-theme="navy"] .multi-hint{color:var(--accent)}
+html[data-theme="navy"] .explain.ok{background:rgba(62,232,165,.1);border-color:rgba(62,232,165,.4)}
+html[data-theme="navy"] .explain.ng{background:rgba(255,111,111,.1);border-color:rgba(255,111,111,.4)}
+html[data-theme="navy"] .scopebtns button,html[data-theme="navy"] .sortmini,html[data-theme="navy"] .deckbtn{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.16);color:var(--ink)}
+html[data-theme="navy"] .scopebtns button.sel,html[data-theme="navy"] .sortmini.sel{background:rgba(79,216,255,.15);border-color:var(--accent);color:var(--accent)}
+html[data-theme="navy"] .deckbtn.perfect{background:rgba(62,232,165,.12);border-color:var(--green)}
+html[data-theme="navy"] .review-item{border-bottom-color:rgba(255,255,255,.1)}
+html[data-theme="navy"] .review-item.review-tap:active{background:rgba(255,255,255,.05)}
+html[data-theme="navy"] .chal-head{color:#9db6d6}
+html[data-theme="navy"] .bigbtn{background:linear-gradient(135deg,#2dd4ff,#7c5cff);color:#081018;box-shadow:0 0 20px rgba(45,212,255,.35)}
+html[data-theme="navy"] .bigbtn.secondary{background:rgba(255,255,255,.05);color:var(--accent);border-color:var(--accent)}
+html[data-theme="navy"] .bigbtn.amber{background:linear-gradient(135deg,#ffb145,#ff6f5f);color:#221206}
+html[data-theme="navy"] .bigbtn:disabled{background:rgba(255,255,255,.08);color:rgba(255,255,255,.3)}
+html[data-theme="navy"] .fixed-back{background:rgba(19,32,56,.92);border-color:var(--accent);color:var(--accent)}
+html[data-theme="navy"] .modal{background:rgba(2,6,14,.65)}
+html[data-theme="navy"] .sheet{background:rgba(16,26,46,.94);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);border:1px solid rgba(120,210,255,.2);color:var(--ink)}
+html[data-theme="navy"] .closex{background:rgba(255,255,255,.1);color:var(--ink)}
+html[data-theme="navy"] nav{background:rgba(10,17,30,.94);border-top:1px solid rgba(120,210,255,.2);backdrop-filter:blur(14px)}
+html[data-theme="navy"] nav button{color:#7f97b3}
+html[data-theme="navy"] #toast{background:rgba(19,32,56,.95);border:1px solid rgba(120,210,255,.3)}
+/* ===== PC・タブレット用（幅700px以上）2026-10-21 5クエスト共通 =====
+   携帯（幅700px未満）の見た目はここより上の指定のままで、何も変わらない */
+@media (min-width:700px){
+  /* 下のメニューを左の縦メニューにして、縦の高さを問題に使う */
+  body{display:grid;grid-template-columns:88px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+  header{grid-column:1/-1;grid-row:1;padding-left:20px;padding-right:20px}
+  main{grid-column:2;grid-row:2}
+  nav{grid-column:1;grid-row:2;flex-direction:column;justify-content:flex-start;gap:4px;padding:12px 0 env(safe-area-inset-bottom);border-top:none!important;border-right:1px solid rgba(148,163,184,.3)}
+  nav button{flex:none;padding:12px 0;font-size:12.5px;gap:4px}
+  nav button .ico{font-size:26px}
+  nav button .ico svg{width:28px;height:25px}
+  nav button.active{background:rgba(37,99,235,.08);box-shadow:inset 4px 0 0 var(--blue)}
+  header .title{font-size:18px}
+  header .sub{font-size:12px}
+  /* 中身の幅と文字の大きさ */
+  .panel,.viewfx-toggles{max-width:1100px}
+  .panel{padding-left:28px;padding-right:28px}
+  .viewfx-toggles{padding:12px 28px 8px;gap:8px}
+  .viewfx-title{font-size:22px}
+  .viewfx-toggle{font-size:13px;padding:8px 14px}
+  .panel h2{font-size:22px}
+  .muted{font-size:14px}
+  .bigbtn{font-size:17px;padding:16px}
+  .sortmini{font-size:13px;padding:5px 12px}
+  /* セット一覧：2列（横長の画面は3列） */
+  .decklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .deckbtn{font-size:16px;padding:16px 18px;min-height:78px}
+  .deckbtn-score{font-size:24px}
+  .deckbtn-pct{font-size:13px}
+  /* 化学基礎：単元ごとのまとまり（開いた中のセットを2列に） */
+  .decklist:has(>.unit-group){display:flex}
+  .unit-group{font-size:16px;padding:14px 16px}
+  .unit-group-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  /* 問題：文字を大きく、選択肢は2列 */
+  .chal-head{font-size:16px}
+  .chal-timer{font-size:30px}
+  .qprompt{font-size:22px}
+  .multi-hint{font-size:15px}
+  .modebadge{font-size:14px;padding:4px 14px}
+  .choices,.choices.textmode{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .choice{font-size:18px;min-height:68px;border-radius:16px}
+  .choices.imgs .choice img{max-height:200px}
+  .explain{font-size:16px;padding:16px}
+  .explain .rname{font-size:17px}
+  .explain .eq{font-size:15px}
+  .memo-img{max-width:60%;max-height:220px}
+  /* 「次へ」は画面下に浮かせず、選択肢のすぐ下に置く（下の余白も不要） */
+  .fixed-next{position:static;width:100%;max-width:none;box-shadow:none;margin-top:14px}
+  #memoSpacer,.panel>div[style*="height:80px"]{display:none}
+  /* 上の切替ボタンの行＋高さ100%の分だけ下にはみ出していたので、中身の高さに合わせる */
+  .viewfx-toggles+.panel{height:auto}
+  /* 反応式（脂肪族・芳香族）：構造式を大きく */
+  .rxn{gap:10px 16px;padding:18px}
+  .cblock{min-width:150px}
+  .rxn .cblock>svg,.choice .cblock>svg{width:148px;height:106px}
+  .cblock .cname{font-size:15px}
+  .qblock{min-width:150px;min-height:120px;font-size:48px}
+  .qblock.small{min-height:56px;font-size:28px;min-width:180px}
+  .reagent-chip{font-size:17px;padding:10px 18px}
+  .plus{font-size:24px}
+  .arrow-h{font-size:32px}
+}
+/* 横長の画面（PC・タブレット横）：暗記は左に問題・右に選択肢、スクロールなしで1画面に */
+@media (min-width:960px) and (orientation:landscape){
+  .decklist,.unit-group-body{grid-template-columns:repeat(3,minmax(0,1fr))}
+  div:has(>.choices):has(>.fixed-next){display:grid;height:auto;align-content:start;column-gap:28px;
+    grid-template-columns:minmax(0,5fr) minmax(0,6fr);grid-template-rows:auto auto 1fr auto;
+    grid-template-areas:"head hint" "prompt choices" "img choices" "exp act"}
+  div:has(>.choices):has(>.fixed-next)>*{grid-column:1}
+  div:has(>.choices):has(>.fixed-next)>.chal-head{grid-area:head}
+  div:has(>.choices):has(>.fixed-next)>.qprompt{grid-area:prompt;font-size:26px}
+  div:has(>.choices):has(>.fixed-next)>.memo-img{grid-area:img;align-self:start;max-width:100%;max-height:300px;margin-top:4px}
+  div:has(>.choices):has(>.fixed-next)>.multi-hint{grid-area:hint}
+  div:has(>.choices):has(>.fixed-next)>.choices{grid-area:choices;align-self:start}
+  div:has(>.choices):has(>.fixed-next)>.decide{grid-area:act;align-self:start}
+  div:has(>.choices):has(>.fixed-next)>.explain{grid-area:exp;align-self:start}
+  div:has(>.choices):has(>.fixed-next)>.fixed-next{grid-area:act;align-self:start;margin-top:12px}
+  div:has(>.choices):has(>.fixed-next) .choice{min-height:80px;font-size:20px}
+  /* チャレンジ：進み具合とタイマーを1行に、構造式の選択肢は横に4つ */
+  div:has(>.choices):has(>.chal-head):not(:has(>.fixed-next)){display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;align-content:start}
+  div:has(>.choices):has(>.chal-head):not(:has(>.fixed-next))>*{grid-column:1/-1}
+  div:has(>.choices):has(>.chal-head):not(:has(>.fixed-next))>.chal-head{grid-column:1;align-self:center;margin-bottom:12px}
+  div:has(>.choices):has(>.chal-head):not(:has(>.fixed-next))>.chal-timer{grid-column:2;font-size:34px;margin-bottom:12px}
+  .choices:has(.cblock){grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+/* ===== 物理基礎クエスト（ここから下は化学クエストの見た目に足した分） ===== */
+header{background:#7c2d12}
+header .title{display:flex;flex-direction:column;line-height:1.25}
+.blank{display:inline-block;min-width:3.2em;text-align:center;color:#94a3b8;font-weight:600}
+.blank.target{min-width:4em;color:var(--red);background:#fef2f2;border:2px solid var(--red);border-radius:8px;padding:0 6px;margin:0 2px;font-weight:800}
+.qprompt .qlead{font-size:12px;font-weight:700;color:#64748b;margin-bottom:6px}
+.qprompt .qtext{line-height:1.9}
+.qprompt sup,.qprompt sub,.choice sup,.choice sub,.rn-statement sup,.rn-statement sub,.review-item sup,.review-item sub,.explain sup,.explain sub{font-size:.7em}
+.qimg{max-height:240px}
+/* RUSH（化学RUSH！の○×ダッシュを物理用に。フラスコの代わりに温度計） */
+.genreSelect{width:100%;padding:11px 12px;border-radius:12px;border:2px solid #e2e8f0;background:#fff;font-size:13px;font-weight:700;color:#475569;font-family:inherit}
+.eg-levelgrid{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.eg-levelbtn{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:14px 16px;border-radius:14px;border:2px solid #e2e8f0;background:#fff;font-family:inherit}
+.eg-levelbtn:active{border-color:var(--blue)}
+.eg-lv-name{font-size:16px;font-weight:800;color:var(--ink)}
+.eg-lv-sub{display:block;font-size:11.5px;color:#64748b;margin-top:2px}
+.eg-lv-best{text-align:right;font-size:11px;color:#64748b;flex:none}
+#rushPanel{--rn-true:#06d6a0;--rn-false:#ef476f}
+.rn-card{padding:0;overflow:hidden}
+.rn-track{position:relative;height:250px;background:radial-gradient(500px 260px at 50% 110%,rgba(255,120,40,.35),transparent),#0b0f1a;border-radius:16px 16px 0 0}
+.rn-header-row{position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:center;z-index:5}
+.rn-genretag{background:rgba(6,10,20,.55);border:1px solid rgba(255,255,255,.25);color:#eaf2ff;font-size:11.5px;font-weight:700;padding:4px 12px;border-radius:20px;max-width:65%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.life-hearts{font-size:17px;letter-spacing:3px}
+.rn-timer-bar{position:absolute;top:46px;left:14px;right:14px;height:6px;border-radius:6px;background:rgba(255,255,255,.2);overflow:hidden;z-index:5}
+.rn-timer-fill{height:100%;width:100%;background:var(--rn-true);transition:width .12s linear,background .3s}
+.rn-score{position:absolute;top:62px;left:0;right:0;text-align:center;color:#fde68a;font-size:13px;font-weight:800;letter-spacing:.05em}
+/* 温度計：残り時間が減るほど赤い液が上がる */
+.rn-thermo{position:absolute;left:50%;top:86px;transform:translateX(-50%);width:26px;height:120px;border-radius:13px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.55)}
+.rn-thermo::after{content:'';position:absolute;left:50%;bottom:-24px;transform:translateX(-50%);width:42px;height:42px;border-radius:50%;background:#ef4444;border:2px solid rgba(255,255,255,.55);box-shadow:0 0 18px rgba(239,68,68,.7)}
+.rn-thermo-fill{position:absolute;left:5px;right:5px;bottom:2px;height:10%;border-radius:8px;background:linear-gradient(#f97316,#ef4444);transition:height .12s linear}
+.rn-ans-btn{position:absolute;bottom:20px;width:92px;height:92px;border-radius:22px;background:rgba(8,14,26,.55);border:2px solid;color:#fff;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;cursor:pointer;z-index:6;transition:transform .1s;font-family:inherit}
+.rn-ans-btn:active{transform:translateY(2px) scale(.97)}
+.rn-ans-btn:disabled{opacity:.5}
+.rn-ans-btn.true-btn{left:16px;color:#5cffc0;border-color:rgba(92,255,192,.7);box-shadow:0 0 14px rgba(92,255,192,.45)}
+.rn-ans-btn.false-btn{right:16px;color:#ff6f8f;border-color:rgba(255,111,143,.7);font-size:48px;box-shadow:0 0 14px rgba(255,111,143,.45)}
+.rn-statement-panel{margin:0;padding:14px 16px;background:linear-gradient(160deg,#3a1e0a,#0b0f1a);border-top:1.5px solid rgba(255,166,77,.55);min-height:150px}
+.rn-statement{font-size:15px;line-height:1.8;color:#f2f5ff}
+.rn-statement .qimg{max-height:150px}
+.rn-statement .fill{color:#fde68a;font-weight:800;border-bottom:2px solid #fde68a;padding:0 2px}
+.rn-statement .fill.target{color:#0b0f1a;background:#fde68a;border-radius:6px;border:none;padding:1px 6px}
+.rn-hint{font-size:11.5px;color:#fdba74;margin-bottom:6px;font-weight:700}
+.rn-feedback{margin-top:8px;padding:8px 10px;border-radius:8px;font-size:12.5px;line-height:1.55;display:none}
+.rn-feedback.correct{background:rgba(6,214,160,.18);color:#5cffc0;display:block}
+.rn-feedback.wrong{background:rgba(239,71,111,.18);color:#ff8fa8;display:block}
+.rn-review-item{padding:10px;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:8px;font-size:12.5px;line-height:1.7;background:#fff}
+.rn-review-item.is-wrong{border-color:#f7c3ce;background:#fff8f9}
+.rn-review-item .rv-head{display:flex;justify-content:space-between;align-items:center;color:#94a3b8;font-size:11px;margin-bottom:4px}
+.rn-review-item .rv-mark{font-weight:700;font-size:13px}
+.rn-review-item .rv-mark.correct{color:#06a06a}
+.rn-review-item .rv-mark.wrong{color:#ef476f}
+.rn-review-item .fill{font-weight:800;text-decoration:underline}
+html[data-theme="navy"] .blank{color:#7f97b3}
+html[data-theme="navy"] .blank.target{background:rgba(255,111,111,.15)}
+html[data-theme="navy"] .qprompt .qlead{color:#9db6d6}
+html[data-theme="navy"] .genreSelect,html[data-theme="navy"] .eg-levelbtn,html[data-theme="navy"] .rn-review-item{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.16);color:var(--ink)}
+html[data-theme="navy"] .genreSelect option{color:#000}
+html[data-theme="navy"] .qimg{background:#fff}
+@media (min-width:700px){
+  .rn-track{height:300px}
+  .rn-thermo{height:160px}
+  .rn-statement{font-size:20px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title"><span>物理基礎クエスト</span><span class="sub">熱とエネルギー</span></div>
+  <button class="themeBtn" id="themeBtn" title="テーマ切替">🎨</button>
+  <span class="accountBtnWrap"><button class="accountBtn" id="accountBtn" title="アカウント">👤</button><span class="lb-notif-badge" id="notifBadge" style="display:none">0</span></span>
+</header>
+
+<main>
+  <div class="view active" id="view-home">
+    <div class="viewfx-toggles">
+      <div class="viewfx-title" id="memoTitle">🧠 穴埋めドリル</div>
+      <button id="btnExplain" class="viewfx-toggle"></button>
+      <button id="btnAnswerAuto" class="viewfx-toggle"></button>
+      <button id="btnAnswerFx" class="viewfx-toggle"></button>
+    </div>
+    <div class="panel" id="homePanel"></div>
+  </div>
+  <div class="view" id="view-challenge"><div class="panel" id="chalPanel"></div></div>
+  <div class="view" id="view-rush"><div class="panel" id="rushPanel"></div></div>
+  <div class="view" id="view-weak"><div class="panel" id="weakPanel"></div></div>
+</main>
+
+<nav>
+  <button data-view="home" class="active"><span class="ico">🧠</span>ドリル</button>
+  <button data-view="challenge"><span class="ico">🏆</span>チャレンジ</button>
+  <button data-view="rush"><span class="ico">🏃</span>RUSH</button>
+  <button data-view="weak"><span class="ico">🎯</span>弱点特訓<span class="badge" id="weakBadge" style="display:none">0</span></button>
+</nav>
+
+<div class="modal" id="infoModal"><div class="sheet" id="infoSheet"></div></div>
+<div id="answerFxPopup"></div>
+<div id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<!-- ログイン・ランキングは化学クエストと共通（同じ sense-of-wonder-lab.github.io 上にあるので共有できる） -->
+<script src="/games/shared/leaderboard.js?v=43"></script>
+<script src="data.js?v=1"></script>
+<script>
+'use strict';
+/* 登録なしで全部のモードを遊べる。ログインが必要なのは全国ランキングに載せるときだけ（2026-11-05 先生） */
+const GAME_ID='physics';
+const STORE_KEY='physicsQuest1';
+LB.init(GAME_ID);
+document.getElementById('accountBtn').onclick=()=>LB.openAccountModal();
+LB.onAuth(u=>{
+  const btn=document.getElementById('accountBtn');
+  if(u&&u.avatar)btn.innerHTML=`<img src="${u.avatar}">`;
+  else if(u)btn.textContent=(u.nickname||'?')[0];
+  else btn.textContent='👤';
+  if(document.getElementById('chalStart'))renderChallengeHome();
+  else if(document.getElementById('rushStartArea'))renderRushHome();
+});
+LB.onMessages(count=>{
+  const b=document.getElementById('notifBadge');
+  b.textContent=count>9?'9+':count;
+  b.style.display=count>0?'':'none';
+});
+document.getElementById('themeBtn').onclick=()=>{
+  const next=document.documentElement.getAttribute('data-theme')==='navy'?'default':'navy';
+  localStorage.setItem('swTheme',next);
+  document.documentElement.setAttribute('data-theme',next);
+};
+
+/* ================= データ(data.js: tools/build_data.py で ver.熱 の穴埋めから生成) ================= */
+const CATEGORIES=DATA.categories;
+const ITEMS=DATA.items;
+const IMAP=Object.fromEntries(ITEMS.map(it=>[it.id,it]));
+function esc(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+/* ^{上付き} _{下付き} を表示用に */
+function fmt(t){return esc(t).replace(/\^\{([^}]*)\}/g,'<sup>$1</sup>').replace(/_\{([^}]*)\}/g,'<sub>$1</sub>');}
+const BLANK_RE=/\{\{([0-9①②]+)\}\}/g;
+/* 4択用：聞いている穴だけ【 ？ 】、同じ文の他の穴は〔　〕のまま */
+function blankText(it){
+  return fmt(it.q).replace(BLANK_RE,(_,k)=>k===it.blank?'<span class="blank target">？</span>':'<span class="blank">〔　　〕</span>').replace(/\n/g,'<br>');
+}
+function qHTML(it){
+  return `${it.img?`<img class="qimg" src="assets/${it.img}" alt="図">`:''}<div class="qtext">${blankText(it)}</div>`;
+}
+/* RUSH・復習用：穴に言葉を入れた文。聞いている穴には word を入れる */
+function filledText(it,word){
+  if(!it.blank)return fmt(it.q).replace(/\n/g,'<br>')+`<br>→ <span class="fill target">${fmt(word)}</span>`;
+  return fmt(it.q).replace(BLANK_RE,(_,k)=>k===it.blank?`<span class="fill target">${fmt(word)}</span>`:`<span class="fill">${fmt(it.fills[k])}</span>`).replace(/\n/g,'<br>');
+}
+function lbl(t){return fmt(t);}
+
+/* ================= 状態 ================= */
+let state={mastered:[],weak:{},catStats:{},inProgress:{},bestList:{},answerFx:'popup',answerAuto:false,explainOn:true};
+function save(){try{localStorage.setItem(STORE_KEY,JSON.stringify(state));}catch(e){}LB.pushState(STORE_KEY,state);}
+function load(){
+  try{const s=localStorage.getItem(STORE_KEY);if(s)state=Object.assign(state,JSON.parse(s));}catch(e){}
+  const cats=new Set(CATEGORIES.map(c=>c.name));
+  state.mastered=(state.mastered||[]).filter(id=>IMAP[id]);
+  for(const id in state.weak)if(!IMAP[id])delete state.weak[id];
+  for(const c in state.catStats)if(!cats.has(c))delete state.catStats[c];
+  for(const c in state.inProgress){const ip=state.inProgress[c];if(!cats.has(c)||!(ip.ids||[]).every(id=>IMAP[id]))delete state.inProgress[c];}
+}
+LB.attachStateSync(STORE_KEY,()=>localStorage.getItem(STORE_KEY));
+function isMastered(id){return state.mastered.includes(id);}
+function markMastered(id){if(!isMastered(id)){state.mastered.push(id);save();}}
+function weakCount(){return Object.keys(state.weak).length;}
+function updateWeakBadge(){
+  const b=document.getElementById('weakBadge');
+  const n=weakCount();
+  b.style.display=n?'block':'none'; b.textContent=n;
+}
+
+/* ================= 共通ユーティリティ ================= */
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+let toastTimer=null;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+function buildChoices(it){
+  const choices=[{text:it.correct,ok:true},...it.wrongs.map(w=>({text:w,ok:false}))];
+  if(it.order)return choices.sort((a,b)=>it.order.indexOf(a.text)-it.order.indexOf(b.text));  // ＞＝＜・増減・A/B は決まった順
+  return shuffle(choices);
+}
+function choicesHTML(choices){
+  return `<div class="choices">${choices.map((c,i)=>`<button class="choice" data-i="${i}">${lbl(c.text)}</button>`).join('')}</div>`;
+}
+function bindAnswer(root,choices,cb){
+  let done=false;
+  root.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>{
+    if(done)return; done=true;
+    cb(choices[+b.dataset.i].ok,[+b.dataset.i]);
+  }));
+}
+function markChoices(root,choices,picked,reveal,dim){
+  root.querySelectorAll('.choice').forEach((b,j)=>{
+    const c=choices[j], p=picked.includes(j);
+    if(p)b.classList.add(c.ok?'correct':'wrong');
+    else if(c.ok&&reveal)b.classList.add('correct');
+    else if(dim)b.classList.add('dim');
+  });
+}
+function explainHTML(it,ok){
+  return `<div class="rname">${ok?'⭕ 正解!':'❌ 不正解… 正解は「'+lbl(it.correct)+'」'}</div>${it.exp?`<div class="note">${fmt(it.exp)}</div>`:''}`;
+}
+function renderQuiz(el,it,onDone,progressText){
+  const choices=buildChoices(it);
+  el.innerHTML=`
+    ${progressText?`<div class="chal-head">${progressText}</div>`:''}
+    <div class="qprompt">${qHTML(it)}</div>
+    ${choicesHTML(choices)}
+    <div class="explain" id="explainBox"></div>
+    <button class="bigbtn" id="nextBtn" style="display:none">つぎへ</button>`;
+  bindAnswer(el,choices,(ok,picked)=>{
+    markChoices(el,choices,picked,true,true);
+    const ex=el.querySelector('#explainBox');
+    ex.className='explain '+(ok?'ok':'ng');
+    ex.innerHTML=explainHTML(it,ok);
+    const nb=el.querySelector('#nextBtn');
+    nb.style.display='block';
+    nb.onclick=()=>onDone(ok);
+    nb.scrollIntoView({behavior:'smooth',block:'nearest'});
+  });
+}
+
+/* ================= 正誤ポップアップ・自動送り・解説（化学クエストと共通仕様） ================= */
+function refreshAnswerFxBtn(){
+  const btn=document.getElementById('btnAnswerFx');
+  btn.textContent=state.answerFx!=='simple'?'🎊 ポップアップ':'🟩 シンプル';
+}
+document.getElementById('btnAnswerFx').addEventListener('click',()=>{
+  state.answerFx=state.answerFx!=='simple'?'simple':'popup';
+  save(); refreshAnswerFxBtn();
+  toast(state.answerFx==='simple'?'正誤リアクション:シンプルに切り替えました':'正誤リアクション:ポップアップに切り替えました');
+});
+function refreshExplainBtn(){
+  const on=state.explainOn!==false, btn=document.getElementById('btnExplain');
+  btn.textContent=on?'📖 解説:ON':'📖 解説:OFF'; btn.classList.toggle('on',on);
+}
+document.getElementById('btnExplain').addEventListener('click',()=>{
+  state.explainOn=state.explainOn===false;
+  save(); refreshExplainBtn();
+  toast(state.explainOn?'回答後に解説を表示します':'解説を表示しないようにしました');
+});
+function refreshAnswerAutoBtn(){
+  const on=state.answerAuto===true, btn=document.getElementById('btnAnswerAuto');
+  btn.textContent=on?'⏭ 自動:ON':'⏭ 自動:OFF'; btn.classList.toggle('on',on);
+}
+document.getElementById('btnAnswerAuto').addEventListener('click',()=>{
+  state.answerAuto=state.answerAuto!==true;
+  save(); refreshAnswerAutoBtn();
+  toast(state.answerAuto?'自動で次へ進むようにしました':'自動で次へ進むのをOFFにしました');
+});
+const ANSWER_FX_DURATION=900;
+function showAnswerFxPopup(ok){
+  const el=document.getElementById('answerFxPopup');
+  el.innerHTML=ok?
+    `<div class="afx-box"><div class="afx-symbol ok">○</div><div class="afx-confetti">🎉🎊✨</div></div>`:
+    `<div class="afx-box"><div class="afx-symbol ng">×</div><div class="afx-sub">( ；∀；)</div></div>`;
+  el.classList.add('show');
+  clearTimeout(showAnswerFxPopup._t);
+  showAnswerFxPopup._t=setTimeout(()=>el.classList.remove('show'),ANSWER_FX_DURATION);
+}
+function renderMemoQ(el,it,onDone,progressText){
+  const choices=buildChoices(it);
+  el.innerHTML=`
+    ${progressText?`<div class="chal-head">${progressText}</div>`:''}
+    <div class="qprompt">${qHTML(it)}</div>
+    ${choicesHTML(choices)}
+    <div class="explain" id="memoExplain"></div>
+    <div id="memoSpacer" style="height:80px"></div>
+    <button class="bigbtn fixed-next" id="memoNextBtn" style="display:none">次へ</button>`;
+  bindAnswer(el,choices,(ok,picked)=>{
+    markChoices(el,choices,picked,false,false);
+    if(state.answerFx!=='simple')showAnswerFxPopup(ok);
+    const showExp=state.explainOn!==false;
+    if(showExp){
+      const ex=el.querySelector('#memoExplain');
+      ex.className='explain '+(ok?'ok':'ng');
+      ex.innerHTML=explainHTML(it,ok);
+    }
+    const nb=el.querySelector('#memoNextBtn');
+    nb.style.display='block';
+    if(showExp&&!ok)el.querySelector('#memoSpacer').scrollIntoView({behavior:'smooth',block:'nearest'});
+    let advanced=false;
+    const advance=()=>{if(advanced)return;advanced=true;onDone(ok);};
+    nb.onclick=advance;
+    if(state.answerAuto&&(ok||!showExp))memoAdvanceTimer=setTimeout(advance,ANSWER_FX_DURATION+(ok?0:1000));
+  });
+}
+function reviewRetry(it){
+  const choices=buildChoices(it);
+  infoSheet.innerHTML=`<h3>もう一度<button class="closex" onclick="infoModal.classList.remove('open')">✕</button></h3>
+    <div class="qprompt">${qHTML(it)}</div>
+    ${choicesHTML(choices)}`;
+  infoModal.classList.add('open');
+  bindAnswer(infoSheet,choices,(ok,picked)=>markChoices(infoSheet,choices,picked,true,true));
+}
+/* 復習リスト用の一行：答えを入れた文 */
+function reviewLine(it){return filledText(it,it.correct);}
+
+/* ================= 単元別ドリル ================= */
+const homePanel=document.getElementById('homePanel');
+const infoModal=document.getElementById('infoModal');
+const infoSheet=document.getElementById('infoSheet');
+infoModal.addEventListener('click',e=>{if(e.target===infoModal)infoModal.classList.remove('open');});
+let catDrill=null;
+let memoAdvanceTimer=null;
+function memoClearAdvanceTimer(){if(memoAdvanceTimer){clearTimeout(memoAdvanceTimer);memoAdvanceTimer=null;}}
+let catSort={field:'no',dir:'asc'};
+function sortedCategories(){
+  const arr=CATEGORIES.map((c,i)=>({c,i}));
+  arr.sort((a,b)=>{
+    let av=a.i,bv=b.i;
+    if(catSort.field==='pct'){
+      const sa=state.catStats[a.c.name], sb=state.catStats[b.c.name];
+      av=sa?(sa.best||0):0; bv=sb?(sb.best||0):0;
+    }
+    return catSort.dir==='asc'?av-bv:bv-av;
+  });
+  return arr.map(x=>x.c);
+}
+function setMemoTitle(on){document.getElementById('memoTitle').style.visibility=on?'':'hidden';}
+function renderHome(){
+  memoClearAdvanceTimer();
+  setMemoTitle(true);
+  const pctCls=p=>p===0?'pct0':p===100?'pct100':'pctv';
+  let list='';
+  for(const c of sortedCategories()){
+    const s=state.catStats[c.name];
+    const lastPct=s?Math.round(100*s.correct/s.total):0;
+    const bestPct=s?(s.best||lastPct):0;
+    const ip=state.inProgress[c.name];
+    list+=`<button class="deckbtn${bestPct===100?' perfect':''}" data-cat="${esc(c.name)}">
+      <span>${esc(c.name)}<span class="muted" style="display:block;font-weight:400;margin-top:2px">${ip?`⏸ 途中(${ip.i}/${ip.ids.length})・`:''}${c.count}問</span></span>
+      <span class="deckbtn-score">今回 <span class="${pctCls(lastPct)}">${lastPct}%</span><span class="deckbtn-pct">最高 <span class="${pctCls(bestPct)}">${bestPct}%</span></span></span>
+      </button>`;
+  }
+  const arrow=catSort.dir==='asc'?'▲':'▼';
+  homePanel.innerHTML=`
+    <div class="card-ui">
+      <div style="font-size:13.5px;line-height:1.8">テキスト「熱とエネルギー」の穴埋めを4択で練習。赤い <span class="blank target">？</span> に入る言葉を選ぼう。<b>間違えた問題は弱点特訓に自動追加</b>されます。</div>
+    </div>
+    <div class="card-ui">
+      <div class="decklist-head">
+        <b>単元を選ぶ</b>
+        <div style="display:flex;gap:4px">
+          <button id="sortNo" class="sortmini ${catSort.field==='no'?'sel':''}">No順${catSort.field==='no'?' '+arrow:''}</button>
+          <button id="sortPct" class="sortmini ${catSort.field==='pct'?'sel':''}">正答率順${catSort.field==='pct'?' '+arrow:''}</button>
+        </div>
+      </div>
+      <div class="decklist">${list}</div>
+    </div>`;
+  document.getElementById('sortNo').onclick=()=>{
+    if(catSort.field==='no')catSort.dir=catSort.dir==='asc'?'desc':'asc'; else{catSort.field='no';catSort.dir='asc';}
+    renderHome();
+  };
+  document.getElementById('sortPct').onclick=()=>{
+    if(catSort.field==='pct')catSort.dir=catSort.dir==='asc'?'desc':'asc'; else{catSort.field='pct';catSort.dir='desc';}
+    renderHome();
+  };
+  homePanel.querySelectorAll('.deckbtn').forEach(el=>el.addEventListener('click',()=>startCatDrill(el.dataset.cat)));
+}
+/* 単元の中はテキストの順番どおりに出す（穴埋めは前の文の答えが次の文のヒントになるため） */
+function startCatDrill(cat,mode){
+  memoClearAdvanceTimer();
+  setMemoTitle(false);
+  const ip=state.inProgress[cat];
+  if(ip&&!mode){
+    homePanel.innerHTML=`<div class="card-ui" style="text-align:center">
+      <div style="font-size:15px;font-weight:700;margin-bottom:10px">「${esc(cat)}」は ${ip.i} / ${ip.ids.length} 問まで進んでいます</div>
+      <button class="bigbtn" id="resumeBtn">続きから</button>
+      <button class="bigbtn secondary" id="restartBtn">最初から</button>
+      <button class="backbtn" id="chooseBack" style="margin-top:8px">← 単元選択にもどる</button>
+    </div>`;
+    document.getElementById('resumeBtn').onclick=()=>startCatDrill(cat,'resume');
+    document.getElementById('restartBtn').onclick=()=>startCatDrill(cat,'restart');
+    document.getElementById('chooseBack').onclick=()=>renderHome();
+    return;
+  }
+  if(mode==='resume')catDrill={cat,its:ip.ids.map(id=>IMAP[id]),i:ip.i,results:ip.results||[]};
+  else{
+    delete state.inProgress[cat]; save();
+    catDrill={cat,its:ITEMS.filter(it=>it.cat===cat),i:0,results:[]};
+  }
+  nextCatQ();
+}
+function catResult(){
+  memoClearAdvanceTimer();
+  setMemoTitle(false);
+  const correct=catDrill.results.filter(x=>x.ok).length;
+  const total=catDrill.results.length;
+  const pct=Math.round(100*correct/total);
+  const prev=state.catStats[catDrill.cat];
+  const best=Math.max(prev?prev.best:0,pct);
+  state.catStats[catDrill.cat]={correct,total,best};
+  delete state.inProgress[catDrill.cat];
+  LB.recordQuizResults(GAME_ID,catDrill.results.map(x=>({id:x.it.id,ok:x.ok})));
+  save();
+  const review=catDrill.results.map((x,i)=>`<div class="review-item${x.ok?'':' review-tap'}" ${x.ok?'':`data-i="${i}"`}><span class="${x.ok?'ok':'ng'}">${x.ok?'⭕':'❌'}</span> ${reviewLine(x.it)}</div>`).join('');
+  homePanel.innerHTML=`
+    <h2>結果発表</h2>
+    <div class="card-ui" style="text-align:center">
+      <div class="score-line" style="font-size:22px">正解 ${correct} / ${total}(${pct}%)</div>
+      <div class="muted">${pct>=best?'自己ベスト更新!':`最高記録 ${best}%`}</div>
+      <button class="bigbtn" id="catAgain">もう一度</button>
+      <button class="bigbtn secondary" id="catHome">単元選択にもどる</button>
+    </div>
+    <div class="card-ui"><b>復習リスト</b>${review}</div>`;
+  homePanel.querySelectorAll('.review-tap').forEach(el=>{el.onclick=()=>reviewRetry(catDrill.results[+el.dataset.i].it);});
+  document.getElementById('catAgain').onclick=()=>startCatDrill(catDrill.cat,'restart');
+  document.getElementById('catHome').onclick=()=>{catDrill=null;renderHome();};
+  homePanel.parentElement.scrollTop=0;
+}
+function nextCatQ(){
+  if(catDrill.i>=catDrill.its.length)return catResult();
+  const it=catDrill.its[catDrill.i];
+  homePanel.innerHTML='<div id="cdq"></div><button class="fixed-back" id="catBack">← 単元選択にもどる</button>';
+  document.getElementById('catBack').onclick=()=>{
+    memoClearAdvanceTimer();
+    state.inProgress[catDrill.cat]={ids:catDrill.its.map(x=>x.id),i:catDrill.i,results:catDrill.results};
+    save();
+    catDrill=null; renderHome();
+  };
+  renderMemoQ(document.getElementById('cdq'),it,ok=>{
+    memoAdvanceTimer=null;
+    catDrill.results.push({it,ok});
+    if(ok)markMastered(it.id);
+    else{state.weak[it.id]=2;save();updateWeakBadge();}
+    catDrill.i++; nextCatQ();
+  },`${esc(catDrill.cat)}　${catDrill.i+1} / ${catDrill.its.length}`);
+  homePanel.parentElement.scrollTop=0;
+}
+
+/* ================= 全国ランキングの枠（共通） ================= */
+function lbBoxHTML(){return '<div class="card-ui" id="lbBox"></div>';}
+function refreshLbBox(kind){
+  const box=document.getElementById('lbBox');
+  if(!box)return;
+  if(LB.currentUser()){
+    box.innerHTML=`<b>🌏 全国ランキング TOP10</b><div class="lb-loading">読み込み中...</div>`;
+    LB.fetchTop(kind,10).then(list=>{
+      const b=document.getElementById('lbBox');
+      if(b)b.innerHTML=`<b>🌏 全国ランキング TOP10</b>`+LB.renderBoardHTML(list,LB.currentUser().uid,kind);
+    });
+  }else{
+    box.innerHTML=`<b>🌏 全国ランキング</b><div class="lb-cta">遊ぶのに登録はいりません。全国ランキングに記録を載せたいときだけログインしてください。</div><button class="bigbtn secondary" id="lbRegisterBtn" style="width:100%">ログインする</button>`;
+    document.getElementById('lbRegisterBtn').onclick=()=>LB.openAccountModal();
+  }
+}
+function pushBest(kind,rec){
+  if(!state.bestList)state.bestList={};
+  const list=state.bestList[kind]||[];
+  list.push(rec);
+  list.sort((a,b)=>(b.correct-a.correct)||(a.sec-b.sec));
+  state.bestList[kind]=list.slice(0,3);
+  save();
+}
+function selfBestHTML(kind){
+  const list=(state.bestList&&state.bestList[kind])||[];
+  return list.length?`<div class="card-ui"><b>🏆 自己ベストTOP3</b>${LB.renderSelfBestHTML(list,kind)}</div>`:'';
+}
+
+/* ================= チャレンジモード(1問ミスでゲームオーバー・化学クエストと共通仕様) ================= */
+const chalPanel=document.getElementById('chalPanel');
+let chal=null, chalKind='score', chalTimerIv=null;
+function stopChalTimer(){if(chalTimerIv){clearInterval(chalTimerIv);chalTimerIv=null;}}
+const CHAL_DESC={
+  score:'全単元からランダム出題。<b>1問15秒</b>以内に正解し続けよう。<b>1問でも間違えたらゲームオーバー</b>、そこまでの連続正解数でランクが決まる!',
+  time:'制限時間<b>1分</b>で何問正解できるか挑戦!<b>1問でも間違えたらゲームオーバー</b>、時間内に正解できた数でランクが決まる!'
+};
+const CHAL_TIME_LIMIT=60, CHAL_Q_SEC=15;  // 穴埋めは文を読むので化学(10秒)より長め
+function chalRank(kind,correct,reachedEnd){
+  if(kind==='time')return correct>=12?'S':correct>=9?'A':correct>=6?'B':correct>=3?'C':'D';
+  if(reachedEnd)return 'SSS';
+  return correct>=60?'SS':correct>=40?'S':correct>=20?'A':correct>=10?'B':correct>=5?'C':'D';
+}
+LB.setRankFn((kind,e)=>{
+  const n=e.correct||0;
+  if(kind==='score'||kind==='time')return chalRank(kind,n,kind==='score'&&(e.rank==='SSS'||n>=ITEMS.length));
+  if(kind.startsWith('rush'))return rushRank(n);
+  return null;
+});
+function renderChallengeHome(){
+  chalPanel.innerHTML=`
+    <h2>🏆 チャレンジモード</h2>
+    <div class="card-ui">
+      <div class="scopebtns">
+        <button id="kScore" class="${chalKind==='score'?'sel':''}">🎯 連続正解チャレンジ</button>
+        <button id="kTime" class="${chalKind==='time'?'sel':''}">⏱ 1分間タイムアタック</button>
+      </div>
+      <div style="font-size:13.5px;line-height:1.8;margin-top:10px">${CHAL_DESC[chalKind]}</div>
+      <button class="bigbtn" id="chalStart">スタート!</button>
+    </div>
+    ${lbBoxHTML()}
+    ${selfBestHTML(chalKind)}`;
+  document.getElementById('kScore').onclick=()=>{chalKind='score';renderChallengeHome();};
+  document.getElementById('kTime').onclick=()=>{chalKind='time';renderChallengeHome();};
+  document.getElementById('chalStart').onclick=startChallenge;
+  refreshLbBox(chalKind);
+}
+function startChallenge(){
+  chal={kind:chalKind,queue:shuffle(ITEMS.slice()),idx:0,correct:0,t0:Date.now(),over:false};
+  nextChalQ();
+}
+function renderChalQuiz(el,it,progressText,timeLimitSec,onDone){
+  const choices=buildChoices(it);
+  el.innerHTML=`
+    <div class="chal-head">${progressText}</div>
+    <div class="chal-timer" id="chalTimer">⏱ ${timeLimitSec}秒</div>
+    <div class="qprompt">${qHTML(it)}</div>
+    ${choicesHTML(choices)}`;
+  let answered=false;
+  function finish(ok,timedOut,picked){
+    if(answered)return; answered=true;
+    stopChalTimer();
+    markChoices(el,choices,picked||[],true,false);
+    setTimeout(()=>onDone(ok,timedOut),ok?650:1300);
+  }
+  const t0=Date.now(), timerEl=el.querySelector('#chalTimer');
+  chalTimerIv=setInterval(()=>{
+    const left=timeLimitSec-(Date.now()-t0)/1000;
+    if(left<=0)finish(false,true);
+    else{timerEl.textContent=`⏱ ${Math.ceil(left)}秒`;timerEl.classList.toggle('urgent',left<=3);}
+  },100);
+  bindAnswer(el,choices,(ok,picked)=>finish(ok,false,picked));
+}
+function nextChalQ(){
+  if(chal.kind==='time'&&CHAL_TIME_LIMIT-(Date.now()-chal.t0)/1000<=0)return chalResult(true);
+  if(chal.idx>=chal.queue.length)return chalResult(true);
+  const it=chal.queue[chal.idx], session=chal;
+  const timeLimitSec=chal.kind==='score'?CHAL_Q_SEC:Math.max(1,Math.ceil(CHAL_TIME_LIMIT-(Date.now()-chal.t0)/1000));
+  const progressText=chal.kind==='score'?`連続正解 ${chal.correct}問`:`正解 ${chal.correct}問`;
+  chalPanel.innerHTML='<div id="cq"></div>';
+  renderChalQuiz(document.getElementById('cq'),it,progressText,timeLimitSec,(ok,timedOut)=>{
+    if(chal!==session||chal.over)return;
+    if(chal.kind==='time'&&timedOut){chalResult(true);return;}
+    if(ok){markMastered(it.id);chal.correct++;chal.idx++;nextChalQ();}
+    else{state.weak[it.id]=2;save();updateWeakBadge();chalResult(false);}
+  });
+  chalPanel.parentElement.scrollTop=0;
+}
+function chalResult(reachedEnd){
+  if(!chal||chal.over)return;
+  chal.over=true;
+  stopChalTimer();
+  const correct=chal.correct, sec=Math.floor((Date.now()-chal.t0)/1000);
+  const rank=chalRank(chal.kind,correct,reachedEnd&&chal.kind==='score');
+  pushBest(chal.kind,{correct,sec,rank});
+  const lbSubmit=LB.currentUser()?LB.submitScore(chal.kind,correct,sec,rank):Promise.resolve();
+  const headline=reachedEnd?(chal.kind==='time'?'⏰ タイムアップ!':'🎉 コンプリート!'):'💥 ゲームオーバー';
+  const msg={SSS:'全問制覇!熱とエネルギーの伝説!',SS:'神域の連続正解!',S:'完璧!熱とエネルギーマスター!',A:'あと一歩で完全制覇!',B:'かなり定着してきた!',C:'弱点特訓で復習しよう!',D:'ドリルで基礎から固めよう!'}[rank];
+  chalPanel.innerHTML=`
+    <h2>結果発表</h2>
+    <div class="card-ui" style="text-align:center">
+      <div class="score-line" style="font-size:17px">${headline}</div>
+      <div class="rankbig rank-${rank}">${rank}</div>
+      <div class="score-line">正解 ${correct}問　⏱ ${sec}秒</div>
+      <div class="muted">${msg}</div>
+      <button class="bigbtn" id="chalAgain">もう一度</button>
+      <button class="bigbtn secondary" id="chalHome">トップへ</button>
+    </div>
+    ${lbBoxHTML()}`;
+  const kind=chal.kind;
+  document.getElementById('chalAgain').onclick=startChallenge;
+  document.getElementById('chalHome').onclick=renderChallengeHome;
+  refreshLbBox(kind);
+  lbSubmit.then(()=>refreshLbBox(kind));
+  chalPanel.parentElement.scrollTop=0;
+}
+
+/* ================= RUSH（化学RUSH！の○×ダッシュを流用） =================
+   穴に「正解」か「誤答のどれか」を入れた文を出し、正しければ○・誤りなら× */
+const rushPanel=document.getElementById('rushPanel');
+const RUSH_DIFFS={
+  easy:{label:'Easy',lives:5,sub:'ミス許容5回'},
+  normal:{label:'Normal',lives:2,sub:'ミス許容2回'},
+  hard:{label:'Hard',lives:1,sub:'ノーミス'}
+};
+const RUSH_Q_MS=10000;
+const RUSH_SCOPES=[
+  {value:'all',label:'熱とエネルギー 全単元',kind:'rushAll',match:()=>true},
+  ...CATEGORIES.map((c,i)=>({value:c.name,label:c.name,kind:'rush'+(i+1),match:cat=>cat===c.name}))
+];
+let rushScope='all', rush=null, lastRush=null;
+function rushScopeOf(v){return RUSH_SCOPES.find(s=>s.value===v)||RUSH_SCOPES[0];}
+function rushRank(correct){return correct>=50?'SS':correct>=30?'S':correct>=20?'A':correct>=10?'B':correct>=3?'C':'D';}
+/* 1問分の○×を作る：半分は正解を入れた正しい文、半分は誤答を入れた誤りの文 */
+function makeRushQ(it){
+  const truth=Math.random()<0.5;
+  const word=truth?it.correct:it.wrongs[Math.floor(Math.random()*it.wrongs.length)];
+  return {it,word,answer:truth};
+}
+function renderRushHome(){
+  rush=null;
+  const sc=rushScopeOf(rushScope);
+  rushPanel.innerHTML=`
+    <h2>🏃 物理RUSH！</h2>
+    <div class="card-ui" id="rushStartArea">
+      <div class="muted">黄色の言葉が入った文が正しければ<b>○</b>、間違っていれば<b>×</b>。1問<b>10秒</b>、間違えるとライフが減るよ。範囲を選んで、難易度ボタンを押すとすぐスタート!</div>
+      <select class="genreSelect" id="rushScopeSel" style="margin-top:12px">${RUSH_SCOPES.map(s=>`<option value="${esc(s.value)}" ${s.value===rushScope?'selected':''}>${esc(s.label)}</option>`).join('')}</select>
+      <div class="eg-levelgrid">${Object.keys(RUSH_DIFFS).map(k=>{const d=RUSH_DIFFS[k];return `<button class="eg-levelbtn" data-diff="${k}"><span><span class="eg-lv-name">${d.label}</span><span class="eg-lv-sub">${d.sub}</span></span><span class="eg-lv-best">${k==='hard'?'🏆 全国ランキング対応':''}</span></button>`;}).join('')}</div>
+    </div>
+    ${lbBoxHTML()}
+    ${selfBestHTML(sc.kind)}`;
+  document.getElementById('rushScopeSel').onchange=e=>{rushScope=e.target.value;renderRushHome();};
+  rushPanel.querySelectorAll('.eg-levelbtn').forEach(b=>b.onclick=()=>startRush(b.dataset.diff));
+  refreshLbBox(sc.kind);
+}
+function startRush(diff){
+  const d=RUSH_DIFFS[diff], sc=rushScopeOf(rushScope);
+  rush={pool:shuffle(ITEMS.filter(it=>sc.match(it.cat))),idx:0,lives:d.lives,maxLives:d.lives,diff,scope:rushScope,
+        correct:0,total:0,history:[],t0:Date.now(),timer:null,next:null,answered:false,q:null};
+  rushPanel.innerHTML=`
+    <div class="card-ui rn-card">
+      <div class="rn-track">
+        <div class="rn-header-row"><span class="rn-genretag" id="rnTag">-</span><span class="life-hearts" id="rnHearts"></span></div>
+        <div class="rn-timer-bar"><div class="rn-timer-fill" id="rnTimerFill"></div></div>
+        <div class="rn-score" id="rnScore"></div>
+        <div class="rn-thermo"><div class="rn-thermo-fill" id="rnThermo"></div></div>
+        <button class="rn-ans-btn true-btn" id="rnTrue">○</button>
+        <button class="rn-ans-btn false-btn" id="rnFalse">×</button>
+      </div>
+      <div class="rn-statement-panel">
+        <div class="rn-hint">黄色の言葉は正しい？</div>
+        <div class="rn-statement" id="rnStatement"></div>
+        <div class="rn-feedback" id="rnFeedback"></div>
+      </div>
+    </div>`;
+  document.getElementById('rnTrue').onclick=()=>rushAnswer(true);
+  document.getElementById('rnFalse').onclick=()=>rushAnswer(false);
+  rushNext();
+}
+function rushClear(){if(!rush)return;clearInterval(rush.timer);clearTimeout(rush.next);rush.timer=rush.next=null;}
+function rushHUD(){
+  let h='';for(let i=0;i<rush.maxLives;i++)h+=i<rush.lives?'❤️':'🖤';
+  document.getElementById('rnHearts').textContent=h;
+  document.getElementById('rnScore').textContent=`${rush.correct}問正解`;
+}
+function rushNext(){
+  if(rush.idx>=rush.pool.length){rush.pool=shuffle(rush.pool);rush.idx=0;}
+  rush.q=makeRushQ(rush.pool[rush.idx]);
+  rush.answered=false;
+  const it=rush.q.it;
+  document.getElementById('rnTag').textContent=it.cat;
+  document.getElementById('rnStatement').innerHTML=(it.img?`<img class="qimg" src="assets/${it.img}" alt="図">`:'')+filledText(it,rush.q.word);
+  const fb=document.getElementById('rnFeedback'); fb.className='rn-feedback'; fb.style.display='none';
+  document.getElementById('rnTrue').disabled=document.getElementById('rnFalse').disabled=false;
+  rushHUD();
+  const t0=Date.now(), fill=document.getElementById('rnTimerFill'), th=document.getElementById('rnThermo');
+  rush.timer=setInterval(()=>{
+    const ratio=Math.max(0,1-(Date.now()-t0)/RUSH_Q_MS);
+    fill.style.width=(ratio*100)+'%';
+    fill.style.background=ratio>.5?'#06d6a0':ratio>.2?'#ffd166':'#ef476f';
+    th.style.height=(8+(1-ratio)*88)+'%';  // 時間がたつほど温度計の液が上がる
+    if(ratio<=0)rushAnswer(null);
+  },100);
+}
+function rushAnswer(user){
+  if(!rush||rush.answered)return;
+  rush.answered=true;
+  rushClear();
+  const q=rush.q, timeout=user===null, ok=!timeout&&user===q.answer;
+  rush.total++;
+  if(ok)rush.correct++; else rush.lives--;
+  LB.recordQuizResults(GAME_ID+'rush',[{id:q.it.id,ok}]);
+  rush.history.push({q,ok,user});
+  document.getElementById('rnTrue').disabled=document.getElementById('rnFalse').disabled=true;
+  const fb=document.getElementById('rnFeedback');
+  fb.className='rn-feedback '+(ok?'correct':'wrong');
+  fb.style.display='block';
+  fb.innerHTML=ok?'⭕ 正解!':`${timeout?'⏰ 時間切れ!':'❌ 残念!'} 正解は「${q.answer?'正しい(○)':'誤り(×)'}」。この穴に入るのは「${lbl(q.it.correct)}」。${fmt(q.it.exp||'')}`;
+  rushHUD();
+  if(rush.lives<=0)rush.next=setTimeout(finishRush,1600);
+  else rush.next=setTimeout(()=>{rush.idx++;rushNext();},ok?900:2600);
+}
+function finishRush(){
+  if(!rush)return;
+  rushClear();
+  const sc=rushScopeOf(rush.scope), sec=Math.floor((Date.now()-rush.t0)/1000);
+  const eligible=rush.diff==='hard', rank=eligible?rushRank(rush.correct):null;
+  if(eligible)pushBest(sc.kind,{correct:rush.correct,sec,rank});
+  lastRush={history:rush.history,correct:rush.correct,diff:rush.diff,kind:sc.kind,rank};
+  const lbSubmit=(eligible&&LB.currentUser())?LB.submitScore(sc.kind,rush.correct,sec,rank):Promise.resolve();
+  rush=null;
+  renderRushResult();
+  if(eligible){refreshLbBox(sc.kind);lbSubmit.then(()=>refreshLbBox(sc.kind));}
+}
+function renderRushResult(){
+  const r=lastRush;
+  rushPanel.innerHTML=`
+    <h2>結果発表</h2>
+    <div class="card-ui" style="text-align:center">
+      ${r.rank?`<div class="rankbig rank-${r.rank}">${r.rank}</div>`:''}
+      <div class="score-line">${r.correct}問正解</div>
+      ${r.rank?'':'<div class="muted">全国ランキングに載るのは Hard だけです</div>'}
+      <button class="bigbtn" id="rnRetry">もう一度</button>
+      <button class="bigbtn secondary" id="rnReview">📋 今回の問題を振り返る</button>
+      <button class="bigbtn secondary" id="rnBack">モード選択に戻る</button>
+    </div>
+    ${r.rank?lbBoxHTML()+selfBestHTML(r.kind):''}`;
+  document.getElementById('rnRetry').onclick=()=>startRush(r.diff);
+  document.getElementById('rnReview').onclick=renderRushReview;
+  document.getElementById('rnBack').onclick=renderRushHome;
+  rushPanel.parentElement.scrollTop=0;
+}
+function renderRushReview(){
+  const h=lastRush.history;
+  const rows=h.filter(x=>!x.ok).concat(h.filter(x=>x.ok)).map(x=>`
+    <div class="rn-review-item ${x.ok?'':'is-wrong'}">
+      <div class="rv-head"><span>${esc(x.q.it.cat)}</span><span class="rv-mark ${x.ok?'correct':'wrong'}">${x.ok?'○ 正解':'× 不正解'}</span></div>
+      <div>${filledText(x.q.it,x.q.word)}</div>
+      <div class="muted">あなたの答え：<b>${x.user===null?'時間切れ':x.user?'○':'×'}</b>　／　正解：<b>${x.q.answer?'○':'×'}</b>　／　穴に入るのは「<b>${lbl(x.q.it.correct)}</b>」</div>
+    </div>`).join('');
+  rushPanel.innerHTML=`<h2>📋 今回の振り返り</h2>${rows||'<div class="muted">振り返る問題がありません。</div>'}<button class="bigbtn secondary" id="rnReviewBack">戻る</button>`;
+  document.getElementById('rnReviewBack').onclick=renderRushResult;
+  rushPanel.parentElement.scrollTop=0;
+}
+
+/* ================= 弱点特訓 ================= */
+const weakPanel=document.getElementById('weakPanel');
+let drill=null;
+function renderWeakHome(){
+  const n=weakCount();
+  let list='';
+  for(const id in state.weak){
+    const it=IMAP[id];
+    list+=`<div class="review-item">🎯 ${reviewLine(it)} <span class="muted">(あと${state.weak[id]}回連続正解でクリア)</span></div>`;
+  }
+  weakPanel.innerHTML=`
+    <h2>🎯 弱点特訓</h2>
+    <div class="card-ui">
+      <div style="font-size:13.5px;line-height:1.8">間違えた問題がここに溜まります。<b>2回連続で正解</b>するとリストから消えます。</div>
+      <button class="bigbtn amber" id="drillStart" ${n?'':'disabled'}>${n?`特訓スタート(${n}件)`:'弱点はありません🎉'}</button>
+    </div>
+    ${list?`<div class="card-ui"><b>弱点リスト</b>${list}</div>`:''}`;
+  if(n)document.getElementById('drillStart').onclick=startDrill;
+}
+function startDrill(){drill={ids:shuffle(Object.keys(state.weak)),i:0};nextDrillQ();}
+function nextDrillQ(){
+  while(drill.i<drill.ids.length&&!(drill.ids[drill.i] in state.weak))drill.i++;
+  if(drill.i>=drill.ids.length){drill=null;renderWeakHome();updateWeakBadge();toast('特訓おつかれさま!');return;}
+  const id=drill.ids[drill.i];
+  weakPanel.innerHTML='<div id="dq"></div>';
+  renderQuiz(document.getElementById('dq'),IMAP[id],ok=>{
+    if(ok){state.weak[id]--;if(state.weak[id]<=0){delete state.weak[id];markMastered(id);}}
+    else state.weak[id]=2;
+    save(); updateWeakBadge();
+    drill.i++; nextDrillQ();
+  },`弱点特訓　残り ${drill.ids.length-drill.i} 件`);
+  weakPanel.parentElement.scrollTop=0;
+}
+
+/* ================= 確認ダイアログ・ナビ ================= */
+function confirmDialog(message,onConfirm){
+  infoSheet.innerHTML=`<h3>確認<button class="closex" onclick="infoModal.classList.remove('open')">✕</button></h3>
+    <div style="font-size:13.5px;line-height:1.8;margin-bottom:6px">${message}</div>
+    <button class="bigbtn amber" id="confirmYes">終了する</button>
+    <button class="bigbtn secondary" id="confirmNo">続ける</button>`;
+  infoModal.classList.add('open');
+  document.getElementById('confirmYes').onclick=()=>{infoModal.classList.remove('open');onConfirm();};
+  document.getElementById('confirmNo').onclick=()=>infoModal.classList.remove('open');
+}
+const VIEW_TITLES={challenge:'チャレンジモード',rush:'🏃 物理RUSH！',weak:'🎯 弱点特訓'};
+function switchView(view){
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.view===view));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  if(view==='home'&&!catDrill)renderHome();
+  if(view==='challenge'&&(!chal||chal.over))renderChallengeHome();
+  if(view==='rush'&&!rush)renderRushHome();
+  if(view==='weak'&&!drill)renderWeakHome();
+}
+document.querySelectorAll('nav button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const target=b.dataset.view;
+    const active=document.querySelector('.view.active').id.replace('view-','');
+    const playing=(active==='challenge'&&chal&&!chal.over)||(active==='rush'&&rush);
+    if(playing&&target!==active){
+      confirmDialog(active==='rush'?'RUSHを終了しますか？記録は保存されません。':'チャレンジを終了しますか？記録は保存されません。',()=>{
+        if(active==='rush'){rushClear();rush=null;}
+        else{stopChalTimer();chal.over=true;chal=null;}
+        switchView(target);
+      });
+      return;
+    }
+    switchView(target);
+  });
+});
+
+/* ================= 起動 ================= */
+load();
+updateWeakBadge();
+refreshAnswerFxBtn();
+refreshAnswerAutoBtn();
+refreshExplainBtn();
+renderHome();
+</script>
+</body>
+</html>
