@@ -12,6 +12,7 @@
 | ファイル | 役割 |
 |---|---|
 | `index.html` | 画面とゲームの動き（化学クエストの画面・化学RUSH！を流用） |
+| `admin.html` | 管理画面（https://szs-physics.github.io/physics-quest/admin.html）。管理者アカウントでログインすると、物理を遊んだ生徒の記録・問題ごとの正答率・ランキングが見られる |
 | `data.js` | 問題データ（自動で作るので直接は直さない） |
 | `assets/` | 問題で使う図 |
 | `tools/fill_raw_heat.txt` | テキスト（R8 高1物理基礎テキスト ver.熱）の「Ⅲ 穴埋め問題」を抜き出したもの |

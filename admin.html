@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>管理画面 | 物理基礎クエスト</title>
+<style>
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;color:#1e293b;margin:0;background:#f8fafc;padding:24px 16px 60px}
+  h1{font-size:19px;margin:0 0 4px}
+  .sub{font-size:12.5px;color:#64748b;margin-bottom:20px}
+  .card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .loginWrap{max-width:900px;margin:0 auto}
+  .layout{display:flex;gap:16px;align-items:flex-start;max-width:1400px}
+  .leftCol{flex:0 0 60%;min-width:0}
+  .rightCol{flex:0 0 40%;min-width:0;position:sticky;top:24px}
+  @media(max-width:900px){.layout{flex-direction:column}.leftCol,.rightCol{flex:1 1 auto;width:100%;position:static}}
+  #gsiBox{display:flex;justify-content:center;padding:20px 0}
+  #err{color:#dc2626;font-size:13px;text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #f1f5f9;white-space:nowrap}
+  th{color:#64748b;font-weight:700;font-size:11.5px}
+  .avatar{width:26px;height:26px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;background:#7c2d12;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+  .stat-row{display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+  .stat{background:#f8fafc;border-radius:10px;padding:10px 16px}
+  .stat b{display:block;font-size:20px}
+  .stat span{font-size:11.5px;color:#64748b}
+  .tag{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px}
+  .tag-active{background:#dcfce7;color:#15803d}
+  .tag-idle{background:#f1f5f9;color:#94a3b8}
+  .tag-risk{background:#fee2e2;color:#b91c1c}
+  .tag-new{background:#e0e7ff;color:#4338ca}
+  .tw{overflow-x:auto}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .toolbar input[type=search],.toolbar select{border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;background:#f8fafc}
+  .toolbar input[type=search]{flex:1;min-width:160px}
+  .btn{border:1px solid #e2e8f0;background:#fff;color:#1e293b;border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+  .btn:hover{background:#f1f5f9}
+  .btn-primary{background:#7c2d12;border-color:#7c2d12;color:#fff}
+  .btn-primary:hover{background:#9a3412}
+  th.sortable{cursor:pointer;user-select:none}
+  th.sortable .arrow{opacity:.35;font-size:10px;margin-left:2px}
+  th.sortable.sorted .arrow{opacity:1}
+  #tbody tr{cursor:pointer}
+  #tbody tr:hover{background:#f8fafc}
+  #tbody tr.selected{background:#fff7ed}
+  .resultCount{font-size:12px;color:#94a3b8;margin:-6px 0 12px}
+  .detailCard{min-height:200px}
+  .detailEmpty{color:#94a3b8;font-size:13px;text-align:center;padding:40px 10px}
+  .detailBox h2{font-size:16px;margin:0 0 2px;display:flex;align-items:center;gap:8px}
+  .detailBox .msub{font-size:12px;color:#64748b;margin-bottom:14px;line-height:1.7}
+  .detailBox h3{font-size:12.5px;color:#334155;margin:16px 0 6px;font-weight:800}
+  .progRow{display:flex;align-items:center;gap:6px;font-size:12px;padding:3px 0}
+  .progRow .pname{flex:1;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .progBar{width:70px;height:6px;background:#f1f5f9;border-radius:4px;overflow:hidden;flex:none}
+  .progBar i{display:block;height:100%;border-radius:4px}
+  .progPct{width:60px;text-align:right;font-weight:700;color:#334155;flex:none}
+  .noProg{color:#cbd5e1;font-size:12px}
+  .weakItem{font-size:12px;color:#475569;padding:4px 0;border-bottom:1px dashed #f1f5f9;white-space:normal}
+  .detailMsgRow{display:flex;gap:6px;margin-top:16px;border-top:1px solid #f1f5f9;padding-top:14px}
+  .detailMsgRow input{flex:1;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;font-size:12.5px}
+  .memoBox{margin:14px 0}
+  .memoBox label{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:#334155;margin-bottom:4px}
+  .memoBox label span{font-weight:400;color:#94a3b8;font-size:11px}
+  .memoBox textarea{width:100%;min-height:50px;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;background:#fff7ed}
+  .memoCell{white-space:normal;min-width:100px;max-width:170px;color:#9a3412;font-weight:700;font-size:12.5px}
+  .tabbar{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+  .tabbtn{border:1px solid #e2e8f0;background:#fff;color:#64748b;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer}
+  .tabbtn.active{background:#7c2d12;border-color:#7c2d12;color:#fff}
+  .qCell{white-space:normal;min-width:260px;max-width:420px;line-height:1.6}
+  .qCorrect{white-space:normal;max-width:160px;color:#15803d;font-weight:700}
+  .qWrongs{white-space:normal;max-width:220px;color:#94a3b8;font-size:12px}
+  .blank{display:inline-block;color:#94a3b8}
+  .blank.target{color:#c2410c;font-weight:800;border:1.5px solid #fdba74;border-radius:6px;padding:0 6px;background:#fff7ed}
+  .qThumb{display:block;max-width:150px;max-height:80px;margin-bottom:4px;border:1px solid #e2e8f0;border-radius:6px}
+  .pct{font-weight:800}
+  .pct.low{color:#dc2626}.pct.mid{color:#d97706}.pct.high{color:#16a34a}
+  .pct small{font-weight:400;color:#94a3b8;margin-left:3px}
+  tr.lbOff td{color:#94a3b8;text-decoration:line-through}
+</style>
+</head>
+<body>
+<h1>⚙️ 物理基礎クエスト 管理画面</h1>
+<div class="sub">物理基礎クエストを遊んだログインユーザーの記録・問題ごとの正答率・ランキング</div>
+
+<div class="card loginWrap" id="loginCard">
+  <div style="text-align:center;font-size:13px;color:#64748b">管理者アカウントでログインしてください</div>
+  <div id="gsiBox"></div>
+  <div id="err"></div>
+</div>
+
+<div id="dataCard" style="display:none">
+  <div class="tabbar">
+    <button class="tabbtn active" data-tab="users">👤 生徒一覧</button>
+    <button class="tabbtn" data-tab="questions">📋 問題ごとの正答率</button>
+    <button class="tabbtn" data-tab="ranking">🏆 ランキング</button>
+    <span style="flex:1"></span>
+    <button class="btn" id="reloadBtn">↻ 再読み込み</button>
+    <button class="btn" id="logoutBtn">ログアウト</button>
+  </div>
+
+  <!-- 生徒一覧 -->
+  <div id="view-users" class="layout">
+    <div class="leftCol card">
+      <div class="stat-row" id="stats"></div>
+      <div class="toolbar"><input type="search" id="searchBox" placeholder="ニックネーム・メール・メモで検索"></div>
+      <div class="resultCount" id="resultCount"></div>
+      <div class="tw"><table id="tbl">
+        <thead><tr>
+          <th></th>
+          <th class="sortable" data-key="nickname">名前<span class="arrow">▾</span></th>
+          <th class="sortable" data-key="memo">メモ<span class="arrow">▾</span></th>
+          <th class="sortable" data-key="lastActive">最終アクセス<span class="arrow">▾</span></th>
+          <th class="sortable" data-key="cleared">単元100%<span class="arrow">▾</span></th>
+          <th class="sortable" data-key="answered">解いた問題<span class="arrow">▾</span></th>
+          <th class="sortable" data-key="rate">正答率<span class="arrow">▾</span></th>
+          <th class="sortable" data-key="weak">弱点<span class="arrow">▾</span></th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table></div>
+    </div>
+    <div class="rightCol card detailCard" id="detailCard"><div class="detailEmpty">左の一覧から生徒を選ぶと、単元ごとの記録が表示されます</div></div>
+  </div>
+
+  <!-- 問題ごとの正答率 -->
+  <div id="view-questions" class="card" style="display:none">
+    <div class="toolbar">
+      <select id="qUnit"></select>
+      <select id="qUser"></select>
+      <select id="qSort">
+        <option value="order">テキストの順</option>
+        <option value="low">4択の正答率が低い順</option>
+        <option value="rushlow">RUSHの正答率が低い順</option>
+        <option value="many">解かれた回数が多い順</option>
+      </select>
+    </div>
+    <div class="resultCount" id="qCount"></div>
+    <div class="tw"><table>
+      <thead><tr><th>単元</th><th>問題</th><th>正解</th><th>誤答の選択肢</th><th>4択 正答率</th><th>RUSH 正答率</th><th id="qUserHead">選んだ生徒</th></tr></thead>
+      <tbody id="qBody"></tbody>
+    </table></div>
+  </div>
+
+  <!-- ランキング -->
+  <div id="view-ranking" class="card" style="display:none">
+    <div class="toolbar"><select id="rkKind"></select></div>
+    <div class="resultCount">線で消えている人は、管理画面（化学）でランキング非表示にした人です（全ゲーム共通の設定）。</div>
+    <div class="tw"><table>
+      <thead><tr><th>順位</th><th>名前</th><th>メモ</th><th>記録</th><th>ランク</th><th>日時</th></tr></thead>
+      <tbody id="rkBody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="data.js?v=1"></script>
+<script>
+'use strict';
+/* ログイン・データベースは化学クエストと共通（../Sense-of-Wonder-Lab.github.io/games/shared/admin.html と同じ設定）。
+   見られるかどうかは Firebase のルールで決まる（管理者アカウントだけ users を読める）。 */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBVmC7sIj4mRwgLyNmqJN5CQg6y_XMHiC0",
+  authDomain: "sense-of-wonder-lab.firebaseapp.com",
+  databaseURL: "https://sense-of-wonder-lab-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "sense-of-wonder-lab",
+  storageBucket: "sense-of-wonder-lab.firebasestorage.app",
+  messagingSenderId: "120466477782",
+  appId: "1:120466477782:web:f0ec79bf0cbbf8ef186f77"
+};
+const GOOGLE_CLIENT_ID = '120466477782-k5o5f91ugi2pc17bpcje8o6ojvj699rv.apps.googleusercontent.com';
+const GAME_ID = 'physics';            // index.html の GAME_ID
+const STORE_KEY = 'physicsQuest1';     // index.html の STORE_KEY（users/{uid}/data/ の下に入る）
+const RUSH_KEY = GAME_ID + 'rush';     // RUSH の問題別記録（questionStats/physicsrush）
+const MEMO_KEY = 'physicsAdminMemos_v1'; // メモはこのブラウザにだけ保存（本名をクラウドに上げない）
+
+const CATEGORIES = DATA.categories, ITEMS = DATA.items;
+const RANK_KINDS = [
+  ['score','チャレンジ：連続正解'], ['time','チャレンジ：1分間タイムアタック'],
+  ['rushAll','RUSH Hard：全単元'],
+  ...CATEGORIES.map((c,i)=>['rush'+(i+1), 'RUSH Hard：'+c.name])
+];
+
+/* leaderboard.js が Firebase で使えない文字を含むキーをエスケープしているので戻す */
+const FB_KEY_UNESCAPE = [['%2E','.'],['%23','#'],['%24','$'],['%5B','['],['%5D',']'],['%2F','/'],['%25','%']];
+function unescapeFbKey(k){ let o=String(k); FB_KEY_UNESCAPE.forEach(([e,c])=>{ o=o.split(e).join(c); }); return o; }
+function unescapeKeys(obj){
+  if(!obj || typeof obj!=='object') return obj;
+  if(Array.isArray(obj)) return obj.map(unescapeKeys);
+  const o={}; for(const k in obj) o[unescapeFbKey(k)] = unescapeKeys(obj[k]); return o;
+}
+
+firebase.initializeApp(FIREBASE_CONFIG);
+const auth = firebase.auth();
+const db = firebase.database();
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmt(t){ return esc(t).replace(/\^\{([^}]*)\}/g,'<sup>$1</sup>').replace(/_\{([^}]*)\}/g,'<sub>$1</sub>'); }
+const BLANK_RE = /\{\{([0-9①②]+)\}\}/g;
+function blankText(it){
+  return fmt(it.q).replace(BLANK_RE,(_,k)=>k===it.blank?'<span class="blank target">？</span>':'<span class="blank">〔　〕</span>').replace(/\n/g,'<br>');
+}
+function fmtDateShort(ts){ if(!ts) return '-'; const d=new Date(ts); return (d.getMonth()+1)+'/'+d.getDate(); }
+function fmtDateTime(ts){ if(!ts) return '-'; const d=new Date(ts); return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function pctHTML(s){
+  if(!s || !s.total) return '<span style="color:#cbd5e1">-</span>';
+  const p = Math.round(100*(s.correct||0)/s.total);
+  return `<span class="pct ${p<50?'low':p<80?'mid':'high'}">${p}%<small>${s.correct||0}/${s.total}</small></span>`;
+}
+function avatarHTML(u, size){
+  const st = size?` style="width:${size}px;height:${size}px"`:'';
+  return u.avatar ? `<img class="avatar" src="${esc(u.avatar)}"${st}>` : `<span class="avatar"${st}>${esc((u.nickname||'?')[0])}</span>`;
+}
+
+/* ---------- ログイン ---------- */
+function handleCredentialResponse(resp){
+  auth.signInWithCredential(firebase.auth.GoogleAuthProvider.credential(resp.credential))
+    .catch(err=>{ document.getElementById('err').textContent='ログインに失敗しました: '+err.message; });
+}
+let gisReady=false;
+const gisPoll=setInterval(()=>{
+  if(gisReady || !window.google || !google.accounts) return;
+  gisReady=true; clearInterval(gisPoll);
+  google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID, callback:handleCredentialResponse});
+  google.accounts.id.renderButton(document.getElementById('gsiBox'), {theme:'outline', size:'large', text:'signin_with', shape:'pill', width:260});
+},200);
+document.getElementById('logoutBtn').onclick=()=>auth.signOut();
+document.getElementById('reloadBtn').onclick=()=>loadAll();
+
+/* ---------- メモ ---------- */
+let memos = (()=>{ try{ return JSON.parse(localStorage.getItem(MEMO_KEY)||'{}')||{}; }catch(e){ return {}; } })();
+function setMemo(uid, text){
+  if(text.trim()) memos[uid]=text; else delete memos[uid];
+  try{ localStorage.setItem(MEMO_KEY, JSON.stringify(memos)); return true; }catch(e){ return false; }
+}
+
+/* ---------- データ読み込み ---------- */
+let allUsers={}, rows=[], qStatsAll={}, lbHidden={}, selectedUid=null;
+let sortKey='lastActive', sortDir=-1;
+
+auth.onAuthStateChanged(u=>{
+  if(!u){ document.getElementById('loginCard').style.display=''; document.getElementById('dataCard').style.display='none'; return; }
+  document.getElementById('err').textContent='';
+  loadAll().catch(()=>{
+    document.getElementById('err').textContent='閲覧権限がありません('+(u.email||'')+')。管理者アカウントでログインしてください。';
+    auth.signOut();
+  });
+});
+
+function loadAll(){
+  return db.ref('users').once('value').then(snap=>{
+    allUsers = snap.val()||{};
+    document.getElementById('loginCard').style.display='none';
+    document.getElementById('dataCard').style.display='';
+    return Promise.all([
+      db.ref('questionStats/'+GAME_ID).once('value').then(s=>s.val()||{}).catch(()=>({})),
+      db.ref('questionStats/'+RUSH_KEY).once('value').then(s=>s.val()||{}).catch(()=>({})),
+      db.ref('lbHidden').once('value').then(s=>s.val()||{}).catch(()=>({}))
+    ]);
+  }).then(([q, qr, hid])=>{
+    qStatsAll = {drill:unescapeKeys(q), rush:unescapeKeys(qr)};
+    lbHidden = hid;
+    rows = buildRows();
+    renderUsers(); populateQSelects(); renderQuestions(); renderRanking();
+  });
+}
+
+/* 物理を遊んだ人だけ（物理の記録があるか、最後に遊んだのが物理） */
+function buildRows(){
+  const out=[];
+  Object.entries(allUsers).forEach(([uid,u])=>{
+    const st = u.data && u.data[STORE_KEY] ? unescapeKeys(u.data[STORE_KEY]) : null;
+    const qs = u.qStats ? unescapeKeys(u.qStats[GAME_ID]||{}) : {};
+    const qr = u.qStats ? unescapeKeys(u.qStats[RUSH_KEY]||{}) : {};
+    if(!st && !Object.keys(qs).length && !Object.keys(qr).length && u.lastGame!==GAME_ID) return;
+    let tot=0, cor=0;
+    Object.values(qs).forEach(s=>{ tot+=s.total||0; cor+=s.correct||0; });
+    const catStats = (st && st.catStats) || {};
+    out.push({
+      uid, u, st, qs, qr,
+      nickname:u.nickname||'-', email:u.email||'-', memo:memos[uid]||'',
+      ts:u.ts||0, lastActive:u.lastActive||0,
+      cleared: CATEGORIES.filter(c=>catStats[c.name] && catStats[c.name].best===100).length,
+      answered: Object.keys(qs).length,
+      rate: tot ? Math.round(100*cor/tot) : -1,
+      weak: st && st.weak ? Object.keys(st.weak).length : 0
+    });
+  });
+  return out;
+}
+
+/* ---------- 生徒一覧 ---------- */
+function renderUsers(){
+  const now=Date.now(), DAY=24*3600*1000;
+  const q=(document.getElementById('searchBox').value||'').trim().toLowerCase();
+  const allCount=rows.length;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><b>${allCount}</b><span>物理を遊んだ人</span></div>
+    <div class="stat"><b>${rows.filter(r=>now-r.lastActive<DAY).length}</b><span>本日アクセス</span></div>
+    <div class="stat"><b>${rows.filter(r=>now-r.lastActive<7*DAY).length}</b><span>直近7日</span></div>
+    <div class="stat"><b>${rows.filter(r=>r.cleared===CATEGORIES.length).length}</b><span>全単元100%</span></div>`;
+  let list = q ? rows.filter(r=>[r.nickname,r.email,r.memo].some(x=>x.toLowerCase().includes(q))) : rows.slice();
+  list.sort((a,b)=>{
+    const av=a[sortKey], bv=b[sortKey];
+    if(sortKey==='memo' && (!av||!bv)) return (av?0:1)-(bv?0:1);
+    if(typeof av==='string') return sortDir*av.localeCompare(bv,'ja');
+    return sortDir*((av||0)-(bv||0));
+  });
+  document.querySelectorAll('#tbl th.sortable').forEach(th=>{
+    th.classList.toggle('sorted', th.dataset.key===sortKey);
+    th.querySelector('.arrow').textContent = th.dataset.key===sortKey ? (sortDir===1?'▴':'▾') : '▾';
+  });
+  document.getElementById('resultCount').textContent = q ? `${list.length}件 / 全${allCount}件` : `全${allCount}件`;
+  document.getElementById('tbody').innerHTML = list.length ? list.map(r=>{
+    const idle=(now-r.lastActive)/DAY;
+    const tag = idle>=30?'<span class="tag tag-risk">要フォロー</span>':idle>=7?'<span class="tag tag-idle">idle</span>':'<span class="tag tag-active">active</span>';
+    const nw = now-r.ts<7*DAY ? ' <span class="tag tag-new">NEW</span>' : '';
+    return `<tr data-uid="${r.uid}"${r.uid===selectedUid?' class="selected"':''}>
+      <td>${avatarHTML(r.u)}</td>
+      <td>${esc(r.nickname)} ${tag}${nw}</td>
+      <td class="memoCell">${r.memo?esc(r.memo):'<span style="color:#cbd5e1;font-weight:400">-</span>'}</td>
+      <td>${fmtDateTime(r.lastActive)}</td>
+      <td>${r.cleared} / ${CATEGORIES.length}</td>
+      <td>${r.answered} / ${ITEMS.length}</td>
+      <td>${r.rate<0?'-':r.rate+'%'}</td>
+      <td>${r.weak||'-'}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="8" style="color:#94a3b8;text-align:center;padding:30px">まだ物理を遊んだログインユーザーはいません</td></tr>`;
+  if(selectedUid) renderDetail(selectedUid);
+}
+document.getElementById('searchBox').oninput=renderUsers;
+document.querySelectorAll('#tbl th.sortable').forEach(th=>th.onclick=()=>{
+  if(sortKey===th.dataset.key) sortDir=-sortDir; else { sortKey=th.dataset.key; sortDir=(sortKey==='nickname'||sortKey==='memo')?1:-1; }
+  renderUsers();
+});
+document.getElementById('tbody').addEventListener('click',e=>{
+  const tr=e.target.closest('tr[data-uid]'); if(!tr) return;
+  selectedUid=tr.dataset.uid; renderUsers();
+  document.getElementById('qUser').value=selectedUid; renderQuestions();
+});
+
+function renderDetail(uid){
+  const r=rows.find(x=>x.uid===uid); if(!r) return;
+  const st=r.st||{}, cs=st.catStats||{}, ip=st.inProgress||{};
+  const units=CATEGORIES.map(c=>{
+    const s=cs[c.name];
+    const best=s?(typeof s.best==='number'?s.best:(s.total?Math.round(100*s.correct/s.total):0)):null;
+    const prog=ip[c.name]?' <span style="color:#d97706;font-size:11px">途中</span>':'';
+    return `<div class="progRow"><span class="pname">${esc(c.name)}${prog}</span>
+      <span class="progBar"><i style="width:${best||0}%;background:${best===100?'#22c55e':best>=60?'#3b82f6':'#f59e0b'}"></i></span>
+      <span class="progPct">${best==null?'<span style="color:#cbd5e1;font-weight:400">未</span>':best+'%'}</span></div>`;
+  }).join('');
+  const IMAP=Object.fromEntries(ITEMS.map(it=>[it.id,it]));
+  const weakIds=Object.keys(st.weak||{}).filter(id=>IMAP[id]);
+  const weakHtml=weakIds.length?weakIds.map(id=>`<div class="weakItem">${blankText(IMAP[id])} <span style="color:#15803d;font-weight:700">→ ${fmt(IMAP[id].correct)}</span></div>`).join(''):'<div class="noProg">なし</div>';
+  const best=(st.bestList)||{};
+  const bestHtml=RANK_KINDS.filter(([k])=>best[k]&&best[k].length).map(([k,label])=>{
+    const b=best[k][0]; return `<div class="progRow"><span class="pname">${esc(label)}</span><span class="progPct" style="width:auto">${b.correct}問・${b.rank||''}</span></div>`;
+  }).join('') || '<div class="noProg">まだ記録がありません</div>';
+  document.getElementById('detailCard').innerHTML=`
+    <div class="detailBox">
+      <h2>${avatarHTML(r.u,32)} ${esc(r.nickname)}</h2>
+      <div class="msub">${esc(r.email)}<br>登録 ${fmtDateShort(r.ts)} ・ 最終 ${fmtDateTime(r.lastActive)} ・ 習得 ${(st.mastered||[]).length}問</div>
+      <div class="memoBox">
+        <label for="detailMemo">📝 メモ（本名など）<span id="memoState">この端末のブラウザにだけ保存</span></label>
+        <textarea id="detailMemo" placeholder="例: 1年3組 山田太郎">${esc(r.memo)}</textarea>
+      </div>
+      <h3>単元ごとの最高正答率（ドリル）</h3>${units}
+      <h3>自己ベスト（チャレンジ・RUSH）</h3>${bestHtml}
+      <h3>弱点に入っている問題（${weakIds.length}）</h3>${weakHtml}
+      <div class="detailMsgRow">
+        <input type="text" id="msgInput" placeholder="メッセージを送る...">
+        <button class="btn btn-primary" id="msgSend">送信</button>
+      </div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:6px">メッセージはどのゲームを開いても届きます（化学と共通）</div>
+    </div>`;
+  const m=document.getElementById('detailMemo');
+  m.oninput=()=>{ document.getElementById('memoState').textContent=setMemo(uid,m.value)?'✓ 保存しました':'⚠ 保存できませんでした'; r.memo=m.value.trim()?m.value:''; };
+  m.onchange=()=>{ renderUsers(); populateQSelects(); renderRanking(); };
+  document.getElementById('msgSend').onclick=()=>{
+    const inp=document.getElementById('msgInput'), text=inp.value.trim(); if(!text) return;
+    db.ref('users/'+uid+'/messages').push({text, ts:firebase.database.ServerValue.TIMESTAMP, read:false})
+      .then(()=>{ inp.value=''; inp.placeholder='✓ 送信しました'; })
+      .catch(err=>alert('送信に失敗しました: '+err.message));
+  };
+}
+
+/* ---------- 問題ごとの正答率 ---------- */
+function userLabel(r){ return r.memo ? `${r.memo}（${r.nickname}）` : r.nickname; }
+function populateQSelects(){
+  const u=document.getElementById('qUnit'), us=document.getElementById('qUser');
+  const uv=u.value, usv=us.value||selectedUid||'';
+  u.innerHTML='<option value="">全単元</option>'+CATEGORIES.map(c=>`<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+  us.innerHTML='<option value="">生徒を選ぶ（個人の正答率）</option>'+rows.slice().sort((a,b)=>userLabel(a).localeCompare(userLabel(b),'ja')).map(r=>`<option value="${r.uid}">${esc(userLabel(r))}</option>`).join('');
+  u.value=uv; us.value=usv;
+}
+['qUnit','qUser','qSort'].forEach(id=>document.getElementById(id).onchange=renderQuestions);
+function rateOf(s){ return s&&s.total ? (s.correct||0)/s.total : 2; }
+function renderQuestions(){
+  const unit=document.getElementById('qUnit').value, uid=document.getElementById('qUser').value, sort=document.getElementById('qSort').value;
+  const r=rows.find(x=>x.uid===uid);
+  document.getElementById('qUserHead').textContent = r ? esc(userLabel(r)) : '選んだ生徒';
+  let list=ITEMS.map((it,i)=>({it,i,d:qStatsAll.drill[it.id],ru:qStatsAll.rush[it.id]})).filter(x=>!unit||x.it.cat===unit);
+  if(sort==='low') list.sort((a,b)=>rateOf(a.d)-rateOf(b.d));
+  else if(sort==='rushlow') list.sort((a,b)=>rateOf(a.ru)-rateOf(b.ru));
+  else if(sort==='many') list.sort((a,b)=>((b.d&&b.d.total)||0)+((b.ru&&b.ru.total)||0)-((a.d&&a.d.total)||0)-((a.ru&&a.ru.total)||0));
+  document.getElementById('qCount').textContent=`${list.length}問（4択＝ドリル・チャレンジ・弱点特訓、RUSH＝○×）`;
+  document.getElementById('qBody').innerHTML=list.map(({it,d,ru})=>{
+    let us='<span style="color:#cbd5e1">-</span>';
+    if(r){ const a=r.qs[it.id], b=r.qr[it.id]; us = (a||b) ? `4択 ${pctHTML(a)}<br>RUSH ${pctHTML(b)}` : '<span style="color:#cbd5e1">未</span>'; }
+    return `<tr>
+      <td style="font-size:12px;color:#64748b">${esc(it.cat)}</td>
+      <td class="qCell">${it.img?`<img class="qThumb" src="assets/${esc(it.img)}" alt="">`:''}${blankText(it)}</td>
+      <td class="qCorrect">${fmt(it.correct)}</td>
+      <td class="qWrongs">${(it.wrongs||[]).map(fmt).join('<br>')}</td>
+      <td>${pctHTML(d)}</td>
+      <td>${pctHTML(ru)}</td>
+      <td>${us}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ---------- ランキング ---------- */
+const rkSel=document.getElementById('rkKind');
+rkSel.innerHTML=RANK_KINDS.map(([k,l])=>`<option value="${k}">${esc(l)}</option>`).join('');
+rkSel.onchange=renderRanking;
+function renderRanking(){
+  const kind=rkSel.value, body=document.getElementById('rkBody');
+  body.innerHTML='<tr><td colspan="6" style="color:#94a3b8">読み込み中…</td></tr>';
+  db.ref('leaderboard/'+GAME_ID+'/'+kind).once('value').then(snap=>{
+    const arr=Object.entries(snap.val()||{}).map(([uid,e])=>Object.assign({uid},e));
+    arr.sort((a,b)=>(b.correct-a.correct)||(a.sec-b.sec));
+    if(!arr.length){ body.innerHTML='<tr><td colspan="6" style="color:#94a3b8;text-align:center;padding:30px">まだ記録がありません</td></tr>'; return; }
+    let n=0;
+    body.innerHTML=arr.map(e=>{
+      const hid=!!lbHidden[e.uid]; if(!hid) n++;
+      return `<tr${hid?' class="lbOff"':''}>
+        <td>${hid?'-':n}</td>
+        <td>${avatarHTML({avatar:e.avatar,nickname:e.name})}${esc(e.name||'-')}</td>
+        <td class="memoCell">${memos[e.uid]?esc(memos[e.uid]):''}</td>
+        <td>${e.correct}問・${e.sec}秒</td>
+        <td>${esc(e.rank||'')}</td>
+        <td>${fmtDateTime(e.ts)}</td>
+      </tr>`;
+    }).join('');
+  }).catch(err=>{ body.innerHTML=`<tr><td colspan="6" style="color:#dc2626">読み込めませんでした: ${esc(err.message)}</td></tr>`; });
+}
+
+/* ---------- タブ ---------- */
+document.querySelectorAll('.tabbtn[data-tab]').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tabbtn[data-tab]').forEach(x=>x.classList.toggle('active',x===b));
+  ['users','questions','ranking'].forEach(t=>document.getElementById('view-'+t).style.display = t===b.dataset.tab ? '' : 'none');
+  if(b.dataset.tab==='ranking') renderRanking();
+});
+</script>
+</body>
+</html>
