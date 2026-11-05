@@ -382,14 +382,14 @@ html[data-theme="navy"] .qimg{background:#fff}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <!-- ログイン・ランキングは化学クエストと共通の部品を読み込む（このサイトは szs-physics.github.io なので完全なURLで指定） -->
-<script src="https://sense-of-wonder-lab.github.io/games/shared/leaderboard.js?v=43"></script>
+<script src="https://sense-of-wonder-lab.github.io/games/shared/leaderboard.js?v=44"></script>
 <script src="data.js?v=1"></script>
 <script>
 'use strict';
 /* 登録なしで全部のモードを遊べる。ログインが必要なのは全国ランキングに載せるときだけ（2026-11-05 先生） */
 const GAME_ID='physics';
 const STORE_KEY='physicsQuest1';
-LB.init(GAME_ID);
+LB.init(GAME_ID,{loginLead:'ログインすると、全国ランキングに記録を載せられるようになり、進捗が他の端末とも同期されます。ログインしなくても、すべてのモードを遊べます。'});
 document.getElementById('accountBtn').onclick=()=>LB.openAccountModal();
 LB.onAuth(u=>{
   const btn=document.getElementById('accountBtn');
