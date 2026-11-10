@@ -43,7 +43,7 @@ const RB=(function(){
     if(typeof RUSH_FIELDS!=='undefined') return Promise.resolve();
     if(!fieldsP) fieldsP=new Promise((resolve,reject)=>{
       const s=document.createElement('script');
-      s.src='fields.js?v=2';
+      s.src='fields.js?v=3';
       s.onload=resolve;
       s.onerror=()=>{ fieldsP=null; s.remove(); reject(new Error('問題データを読み込めませんでした。通信を確認してね')); };
       document.head.appendChild(s);
@@ -56,20 +56,33 @@ const RB=(function(){
   const FIELD_STUBS=[BASICS];
   const fieldList=()=>typeof RUSH_FIELDS!=='undefined'?RUSH_FIELDS:FIELD_STUBS;
   const fieldOf=key=>(typeof RUSH_FIELDS!=='undefined'&&RUSH_FIELDS.find(f=>f.key===key))||null;
+  // genre："F:phy"（全範囲）／"F:phy:g1"（前半・中盤・後半。fields.js の groups）／"F:phy:3"（単元1つ。decks の添字）
+  // decks は出題する単元の添字の一覧（null は全部）
   function parseScope(genre){
-    const m=/^F:(\w+)(?::(\d+))?$/.exec(genre||'');
-    return m ? {field:fieldOf(m[1]), deck:m[2]==null?null:+m[2]} : null;
+    const m=/^F:(\w+)(?::(\d+|g\d+))?$/.exec(genre||'');
+    if(!m) return null;
+    const field=fieldOf(m[1]);
+    if(m[2]==null) return {field, decks:null, name:'全範囲'};
+    if(!field) return {field, decks:null, name:''};
+    if(m[2][0]==='g'){
+      const g=(field.groups||[]).find(x=>x.key===m[2]);
+      return g ? {field, decks:g.decks, name:`${g.name} ${g.from}〜${g.to}`} : {field, decks:null, name:'全範囲'};
+    }
+    const i=+m[2];
+    return {field, decks:[i], name:field.decks[i]?field.decks[i].name:''};
   }
   function scopeLabel(genre){
     const s=parseScope(genre);
     if(!s) return '（物理以外のルーム）';
     if(!s.field) return '（問題データを読み込み中）';
-    return s.field.label+'：'+(s.deck==null?'全範囲':s.field.decks[s.deck].name);
+    return s.field.label+'：'+s.name;
   }
   function scopeOptions(fkey){
-        const f=fieldOf(fkey); if(!f) return [];
+    const f=fieldOf(fkey); if(!f) return [];
     const total=f.decks.reduce((n,d)=>n+d.items.length,0);
+    const count=ds=>ds.reduce((n,i)=>n+f.decks[i].items.length,0);
     return [{value:'F:'+f.key,label:`熱とエネルギー 全単元（${total}問）`}]
+      .concat((f.groups||[]).map(g=>({value:'F:'+f.key+':'+g.key,label:`${g.name}　${g.from}〜${g.to}（${count(g.decks)}問）`})))
       .concat(f.decks.map((d,i)=>({value:'F:'+f.key+':'+i,label:`${d.name}（${d.items.length}問）`})));
   }
   let cardIndex={};
@@ -102,7 +115,7 @@ const RB=(function(){
     if(!s) throw new Error('物理のルームではありません');
     if(!s.field) throw new Error('問題データを読み込めませんでした');
     const cards=[];
-    s.field.decks.forEach((d,i)=>{ if(s.deck==null||s.deck===i) cards.push(...d.items); });
+    s.field.decks.forEach((d,i)=>{ if(s.decks==null||s.decks.includes(i)) cards.push(...d.items); });
     const ids=[];
     // 単元が小さいときは2周目以降も配る（選択肢の並びはその都度変える）
     while(ids.length<QUESTION_COUNT&&cards.length){

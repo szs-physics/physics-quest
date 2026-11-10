@@ -404,7 +404,7 @@ html[data-theme="navy"] .qimg{background:#fff}
 <!-- ログイン・ランキングは化学クエストと共通の部品を読み込む（このサイトは szs-physics.github.io なので完全なURLで指定） -->
 <script src="https://sense-of-wonder-lab.github.io/games/shared/leaderboard.js?v=45"></script>
 <script src="data.js?v=1"></script>
-<script src="fields.js?v=2"></script>
+<script src="fields.js?v=3"></script>
 <script>
 'use strict';
 /* 登録なしで全部のモードを遊べる。ログインが必要なのは全国ランキングに載せるときだけ（2026-11-05 先生） */
@@ -901,9 +901,16 @@ const RUSH_DIFFS={
   hard:{label:'Hard',lives:1,sub:'ノーミス'}
 };
 const RUSH_Q_MS=15000;  // 1問の制限時間（オンライン対戦の4択と同じ15秒）
+/* 範囲：全部 → 前半・中盤・後半（単元の番号で分ける）→ 単元1つずつ。ランキングは範囲ごと（kind） */
+/* 前半・中盤・後半は fields.js の groups（オンライン対戦と共通）。ランキングの kind は rushG1〜rushG3 */
+const unitNo=cat=>parseInt(cat,10);
 const RUSH_SCOPES=[
-  {value:'all',label:'熱とエネルギー 全単元',kind:'rushAll',match:()=>true},
-  ...CATEGORIES.map((c,i)=>({value:c.name,label:c.name,kind:'rush'+(i+1),match:cat=>cat===c.name}))
+  {value:'all',label:`熱とエネルギー 全単元（${ITEMS.length}問）`,kind:'rushAll',match:()=>true},
+  ...RUSH_FIELDS[0].groups.map((g,i)=>{
+    const match=cat=>unitNo(cat)>=g.from&&unitNo(cat)<=g.to;
+    return {value:g.key,label:`${g.name}　${g.from}〜${g.to}（${ITEMS.filter(it=>match(it.cat)).length}問）`,kind:'rushG'+(i+1),match};
+  }),
+  ...CATEGORIES.map((c,i)=>({value:c.name,label:`${c.name}（${c.count}問）`,kind:'rush'+(i+1),match:cat=>cat===c.name}))
 ];
 const RUSH_CARDS=RUSH_FIELDS[0].decks.flatMap(d=>d.items);
 let rushScope='all', rush=null, lastRush=null;
