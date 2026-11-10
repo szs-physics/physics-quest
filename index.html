@@ -62,6 +62,17 @@ nav button.active{color:var(--blue);font-weight:700}
 .deckbtn-score{flex:none;text-align:right;font-size:19px;font-weight:800;color:var(--blue);white-space:nowrap}
 .deckbtn.perfect .deckbtn-score{color:var(--green)}
 .deckbtn-pct{display:block;font-size:11.5px;font-weight:600;color:#64748b}
+/* 単元の枠：上段に名前とスコア、下段に「順番どおり／ランダム」の2つの入口（化学基礎クエストと同じ形） */
+div.deckbtn{display:block}
+div.deckbtn:active{border-color:#e2e8f0}
+div.deckbtn.perfect:active{border-color:#86efac}
+.deck-main{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.deck-modes{display:flex;gap:6px;margin-top:9px}
+.deck-mode{flex:1;padding:8px 6px;border-radius:10px;border:1.5px solid var(--blue);background:#fff;color:var(--blue);font-size:12.5px;font-weight:700;font-family:inherit}
+.deck-mode:active{background:#fff7ed}
+.deckbtn.perfect .deck-mode{border-color:#86efac}
+.deck-mode small{font-size:10.5px;font-weight:600;margin-left:5px;opacity:.85}
+html[data-theme="navy"] .deck-mode{background:transparent}
 .pctv{color:var(--blue)}
 .pct0{color:var(--red)}
 .pct100{color:var(--green)}
@@ -454,7 +465,7 @@ function load(){
   const cats=new Set(CATEGORIES.map(c=>c.name));
   state.mastered=(state.mastered||[]).filter(id=>IMAP[id]);
   for(const id in state.weak)if(!IMAP[id])delete state.weak[id];
-  for(const c in state.catStats)if(!cats.has(c))delete state.catStats[c];
+  for(const c in state.catStats)if(!cats.has(c.replace(RAND_SUFFIX,'')))delete state.catStats[c];
   for(const c in state.inProgress){const ip=state.inProgress[c];if(!cats.has(c)||!(ip.ids||[]).every(id=>IMAP[id]))delete state.inProgress[c];}
 }
 LB.attachStateSync(STORE_KEY,()=>localStorage.getItem(STORE_KEY));
@@ -607,6 +618,9 @@ let catDrill=null;
 let memoAdvanceTimer=null;
 function memoClearAdvanceTimer(){if(memoAdvanceTimer){clearTimeout(memoAdvanceTimer);memoAdvanceTimer=null;}}
 let catSort={field:'no',dir:'asc'};
+/* 記録のキー：順番どおり＝単元名そのまま／ランダム＝単元名＋「｜ランダム」（化学基礎クエストと同じ） */
+const RAND_SUFFIX=/｜ランダム$/;
+function statKey(cat,order){return order==='rand'?cat+'｜ランダム':cat;}
 function sortedCategories(){
   const arr=CATEGORIES.map((c,i)=>({c,i}));
   arr.sort((a,b)=>{
@@ -630,10 +644,17 @@ function renderHome(){
     const lastPct=s?Math.round(100*s.correct/s.total):0;
     const bestPct=s?(s.best||lastPct):0;
     const ip=state.inProgress[c.name];
-    list+=`<button class="deckbtn${bestPct===100?' perfect':''}" data-cat="${esc(c.name)}">
-      <span>${esc(c.name)}<span class="muted" style="display:block;font-weight:400;margin-top:2px">${ip?`⏸ 途中(${ip.i}/${ip.ids.length})・`:''}${c.count}問</span></span>
-      <span class="deckbtn-score">今回 <span class="${pctCls(lastPct)}">${lastPct}%</span><span class="deckbtn-pct">最高 <span class="${pctCls(bestPct)}">${bestPct}%</span></span></span>
-      </button>`;
+    const r=state.catStats[statKey(c.name,'rand')];
+    list+=`<div class="deckbtn${bestPct===100?' perfect':''}">
+      <div class="deck-main">
+        <span>${esc(c.name)}<span class="muted" style="display:block;font-weight:400;margin-top:2px">${ip?`⏸ 途中(${ip.i}/${ip.ids.length})・`:''}${c.count}問</span></span>
+        <span class="deckbtn-score">今回 <span class="${pctCls(lastPct)}">${lastPct}%</span><span class="deckbtn-pct">最高 <span class="${pctCls(bestPct)}">${bestPct}%</span></span></span>
+      </div>
+      <div class="deck-modes">
+        <button class="deck-mode" data-cat="${esc(c.name)}" data-order="seq">▶ 順番どおり</button>
+        <button class="deck-mode" data-cat="${esc(c.name)}" data-order="rand">🔀 ランダム${r?`<small>最高 <span class="${pctCls(r.best||0)}">${r.best||0}%</span></small>`:''}</button>
+      </div>
+    </div>`;
   }
   const arrow=catSort.dir==='asc'?'▲':'▼';
   homePanel.innerHTML=`
@@ -658,29 +679,31 @@ function renderHome(){
     if(catSort.field==='pct')catSort.dir=catSort.dir==='asc'?'desc':'asc'; else{catSort.field='pct';catSort.dir='desc';}
     renderHome();
   };
-  homePanel.querySelectorAll('.deckbtn').forEach(el=>el.addEventListener('click',()=>startCatDrill(el.dataset.cat)));
+  homePanel.querySelectorAll('.deck-mode').forEach(el=>el.addEventListener('click',()=>startCatDrill(el.dataset.cat,null,el.dataset.order)));
 }
-/* 単元の中はテキストの順番どおりに出す（穴埋めは前の文の答えが次の文のヒントになるため） */
-function startCatDrill(cat,mode){
+/* order: 'seq'＝テキストの順番どおり（前の文の答えが次の文のヒントになる）／'rand'＝ランダム */
+function startCatDrill(cat,mode,order){
   memoClearAdvanceTimer();
   setMemoTitle(false);
+  order=order||'seq';
   const ip=state.inProgress[cat];
   if(ip&&!mode){
     homePanel.innerHTML=`<div class="card-ui" style="text-align:center">
-      <div style="font-size:15px;font-weight:700;margin-bottom:10px">「${esc(cat)}」は ${ip.i} / ${ip.ids.length} 問まで進んでいます</div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:10px">「${esc(cat)}」は ${ip.i} / ${ip.ids.length} 問まで進んでいます${ip.order==='rand'?'（ランダム）':''}</div>
       <button class="bigbtn" id="resumeBtn">続きから</button>
-      <button class="bigbtn secondary" id="restartBtn">最初から</button>
+      <button class="bigbtn secondary" id="restartBtn">最初から（${order==='rand'?'ランダム':'順番どおり'}）</button>
       <button class="backbtn" id="chooseBack" style="margin-top:8px">← 単元選択にもどる</button>
     </div>`;
     document.getElementById('resumeBtn').onclick=()=>startCatDrill(cat,'resume');
-    document.getElementById('restartBtn').onclick=()=>startCatDrill(cat,'restart');
+    document.getElementById('restartBtn').onclick=()=>startCatDrill(cat,'restart',order);
     document.getElementById('chooseBack').onclick=()=>renderHome();
     return;
   }
-  if(mode==='resume')catDrill={cat,its:ip.ids.map(id=>IMAP[id]),i:ip.i,results:ip.results||[]};
+  if(mode==='resume')catDrill={cat,its:ip.ids.map(id=>IMAP[id]),i:ip.i,results:ip.results||[],order:ip.order||'seq'};
   else{
     delete state.inProgress[cat]; save();
-    catDrill={cat,its:ITEMS.filter(it=>it.cat===cat),i:0,results:[]};
+    const catItems=ITEMS.filter(it=>it.cat===cat);
+    catDrill={cat,its:order==='rand'?shuffle(catItems.slice()):catItems,i:0,results:[],order};
   }
   nextCatQ();
 }
@@ -690,9 +713,10 @@ function catResult(){
   const correct=catDrill.results.filter(x=>x.ok).length;
   const total=catDrill.results.length;
   const pct=Math.round(100*correct/total);
-  const prev=state.catStats[catDrill.cat];
+  const sk=statKey(catDrill.cat,catDrill.order);
+  const prev=state.catStats[sk];
   const best=Math.max(prev?prev.best:0,pct);
-  state.catStats[catDrill.cat]={correct,total,best};
+  state.catStats[sk]={correct,total,best};
   delete state.inProgress[catDrill.cat];
   LB.recordQuizResults(GAME_ID,catDrill.results.map(x=>({id:x.it.id,ok:x.ok})));
   save();
@@ -707,7 +731,7 @@ function catResult(){
     </div>
     <div class="card-ui"><b>復習リスト</b>${review}</div>`;
   homePanel.querySelectorAll('.review-tap').forEach(el=>{el.onclick=()=>reviewRetry(catDrill.results[+el.dataset.i].it);});
-  document.getElementById('catAgain').onclick=()=>startCatDrill(catDrill.cat,'restart');
+  document.getElementById('catAgain').onclick=()=>startCatDrill(catDrill.cat,'restart',catDrill.order);
   document.getElementById('catHome').onclick=()=>{catDrill=null;renderHome();};
   homePanel.parentElement.scrollTop=0;
 }
@@ -717,7 +741,7 @@ function nextCatQ(){
   homePanel.innerHTML='<div id="cdq"></div><button class="fixed-back" id="catBack">← 単元選択にもどる</button>';
   document.getElementById('catBack').onclick=()=>{
     memoClearAdvanceTimer();
-    state.inProgress[catDrill.cat]={ids:catDrill.its.map(x=>x.id),i:catDrill.i,results:catDrill.results};
+    state.inProgress[catDrill.cat]={ids:catDrill.its.map(x=>x.id),i:catDrill.i,results:catDrill.results,order:catDrill.order};
     save();
     catDrill=null; renderHome();
   };
