@@ -716,6 +716,13 @@ const RB=(function(){
       if(left<=0){ clearInterval(st.timerInterval); st.timerInterval=null; if(!st.answered) choiceAnswer(null); }
     },100);
   }
+  // 正解の大きな〇（次の問題が出るまでに消える）
+  function showOkMark(frame){
+    const m=document.createElement('div');
+    m.className='rb-okmark'; m.setAttribute('aria-hidden','true');
+    frame.appendChild(m);
+    setTimeout(()=>m.remove(),1100);
+  }
   // picked: 選んだ番号の配列（時間切れは null）。多答は正解を過不足なく選べたら正解
   function choiceAnswer(picked){
     if(!st||st.answered) return;
@@ -731,7 +738,8 @@ const RB=(function(){
     });
     const dec=el.ch.querySelector('.rb-decide'); if(dec) dec.remove();
     const fb=document.getElementById('rbFb');
-    // 正解のときは選択肢の枠が緑になるだけ（他のモードと同じ。2026-10-31 先生）。不正解・時間切れのときだけ解説を出す
+    // 正解のときは大きな緑の〇を枠の真ん中に出す（わかりやすく。2026-11-10 先生）。不正解・時間切れのときだけ解説を出す
+    if(ok) showOkMark(el.frame);
     if(!ok){
       fb.className='rb-fb wrong';
       fb.innerHTML=(picked?'❌ 残念！ 緑が正解。 ':'⏰ 時間切れ！ 緑が正解。 ')+q.explanation;
