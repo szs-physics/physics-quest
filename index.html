@@ -312,6 +312,7 @@ header .title{display:flex;flex-direction:column;line-height:1.25}
 .rb-q .rb-qimg{display:block;align-self:center;height:130px;width:auto;max-width:100%;object-fit:contain;background:#fff;border-radius:12px;padding:6px;box-sizing:border-box}
 .rb-qt{font-size:17px;line-height:1.7;font-weight:700}
 .rb-qt .blank{color:#94a3b8}
+.rb-qt .blank.key{color:#ffb4a2;background:linear-gradient(transparent 60%,rgba(253,230,138,.35) 60%)}
 .rb-qt .blank.target{color:#ffd166;border-color:#ffd166;background:rgba(255,209,102,.15)}
 .rb-fb{display:none;font-size:14px;line-height:1.6;padding:10px 12px;border-radius:10px}
 .rb-fb.wrong{display:block;background:rgba(239,71,111,.18);color:#ff9fb4}
@@ -392,7 +393,7 @@ html[data-theme="navy"] .qimg{background:#fff}
 <!-- ログイン・ランキングは化学クエストと共通の部品を読み込む（このサイトは szs-physics.github.io なので完全なURLで指定） -->
 <script src="https://sense-of-wonder-lab.github.io/games/shared/leaderboard.js?v=45"></script>
 <script src="data.js?v=1"></script>
-<script src="fields.js?v=1"></script>
+<script src="fields.js?v=2"></script>
 <script>
 'use strict';
 /* 登録なしで全部のモードを遊べる。ログインが必要なのは全国ランキングに載せるときだけ（2026-11-05 先生） */
@@ -428,13 +429,14 @@ function esc(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','
 function fmt(t){return esc(t).replace(/\^\{([^}]*)\}/g,'<sup>$1</sup>').replace(/_\{([^}]*)\}/g,'<sub>$1</sub>');}
 const BLANK_RE=/\{\{([0-9①②]+)\}\}/g;
 /* 4択用：聞いている穴だけ【 ？ 】、同じ文の他の穴は〔　〕のまま */
-/* fill:true（チャレンジ）は、聞いていない穴に正しい語句を（　）つきで入れて強調する（大切な語句なので） */
-function blankText(it,fill){
+/* 聞いていない穴には正しい語句を（　）つきで入れて強調する（大切な語句なので）。全モード共通。
+   fill=false のときだけ〔　〕の空欄にする */
+function blankText(it,fill=true){
   return fmt(it.q).replace(BLANK_RE,(_,k)=>k===it.blank?'<span class="blank target">？</span>'
     :(fill&&it.fills&&it.fills[k])?`<span class="blank key">（<b>${fmt(it.fills[k])}</b>）</span>`
     :'<span class="blank">〔　　〕</span>').replace(/\n/g,'<br>');
 }
-function qHTML(it,fill){
+function qHTML(it,fill=true){
   return `${it.img?`<img class="qimg" src="assets/${it.img}" alt="図">`:''}<div class="qtext">${blankText(it,fill)}</div>`;
 }
 /* RUSH・復習用：穴に言葉を入れた文。聞いている穴には word を入れる */

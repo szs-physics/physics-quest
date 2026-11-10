@@ -43,7 +43,7 @@ const RB=(function(){
     if(typeof RUSH_FIELDS!=='undefined') return Promise.resolve();
     if(!fieldsP) fieldsP=new Promise((resolve,reject)=>{
       const s=document.createElement('script');
-      s.src='fields.js?v=1';
+      s.src='fields.js?v=2';
       s.onload=resolve;
       s.onerror=()=>{ fieldsP=null; s.remove(); reject(new Error('問題データを読み込めませんでした。通信を確認してね')); };
       document.head.appendChild(s);

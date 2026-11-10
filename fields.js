@@ -6,8 +6,10 @@
   const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const fmt=t=>esc(t).replace(/\^\{([^}]*)\}/g,'<sup>$1</sup>').replace(/_\{([^}]*)\}/g,'<sub>$1</sub>');
   const BLANK=/\{\{([0-9①②]+)\}\}/g;
-  // 聞いている穴だけ【？】、同じ文の他の穴は〔　〕のまま（ドリルと同じ）
-  const qhtml=it=>fmt(it.q).replace(BLANK,(_,k)=>k===it.blank?'<span class="blank target">？</span>':'<span class="blank">〔　　〕</span>').replace(/\n/g,'<br>');
+  // 聞いている穴だけ【？】。同じ文の他の穴は正しい語句を（　）つきで強調して入れる（ドリルと同じ）
+  const qhtml=it=>fmt(it.q).replace(BLANK,(_,k)=>k===it.blank?'<span class="blank target">？</span>'
+    :(it.fills&&it.fills[k])?`<span class="blank key">（<b>${fmt(it.fills[k])}</b>）</span>`
+    :'<span class="blank">〔　　〕</span>').replace(/\n/g,'<br>');
   function card(it){
     let words=[it.correct].concat(it.wrongs);
     if(it.order) words=words.slice().sort((a,b)=>it.order.indexOf(a)-it.order.indexOf(b));
