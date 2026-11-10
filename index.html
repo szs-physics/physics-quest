@@ -297,33 +297,43 @@ header .title{display:flex;flex-direction:column;line-height:1.25}
 .eg-lv-name{font-size:16px;font-weight:800;color:var(--ink)}
 .eg-lv-sub{display:block;font-size:11.5px;color:#64748b;margin-top:2px}
 .eg-lv-best{text-align:right;font-size:11px;color:#64748b;flex:none}
-#rushPanel{--rn-true:#06d6a0;--rn-false:#ef476f}
-.rn-card{padding:0;overflow:hidden}
-.rn-track{position:relative;height:250px;background:radial-gradient(500px 260px at 50% 110%,rgba(255,120,40,.35),transparent),#0b0f1a;border-radius:16px 16px 0 0}
-.rn-header-row{position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:center;z-index:5}
-.rn-genretag{background:rgba(6,10,20,.55);border:1px solid rgba(255,255,255,.25);color:#eaf2ff;font-size:11.5px;font-weight:700;padding:4px 12px;border-radius:20px;max-width:65%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.life-hearts{font-size:17px;letter-spacing:3px}
-.rn-timer-bar{position:absolute;top:46px;left:14px;right:14px;height:6px;border-radius:6px;background:rgba(255,255,255,.2);overflow:hidden;z-index:5}
-.rn-timer-fill{height:100%;width:100%;background:var(--rn-true);transition:width .12s linear,background .3s}
-.rn-score{position:absolute;top:62px;left:0;right:0;text-align:center;color:#fde68a;font-size:13px;font-weight:800;letter-spacing:.05em}
-/* 温度計：残り時間が減るほど赤い液が上がる */
-.rn-thermo{position:absolute;left:50%;top:86px;transform:translateX(-50%);width:26px;height:120px;border-radius:13px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.55)}
-.rn-thermo::after{content:'';position:absolute;left:50%;bottom:-24px;transform:translateX(-50%);width:42px;height:42px;border-radius:50%;background:#ef4444;border:2px solid rgba(255,255,255,.55);box-shadow:0 0 18px rgba(239,68,68,.7)}
-.rn-thermo-fill{position:absolute;left:5px;right:5px;bottom:2px;height:10%;border-radius:8px;background:linear-gradient(#f97316,#ef4444);transition:height .12s linear}
-.rn-ans-btn{position:absolute;bottom:20px;width:92px;height:92px;border-radius:22px;background:rgba(8,14,26,.55);border:2px solid;color:#fff;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;cursor:pointer;z-index:6;transition:transform .1s;font-family:inherit}
-.rn-ans-btn:active{transform:translateY(2px) scale(.97)}
-.rn-ans-btn:disabled{opacity:.5}
-.rn-ans-btn.true-btn{left:16px;color:#5cffc0;border-color:rgba(92,255,192,.7);box-shadow:0 0 14px rgba(92,255,192,.45)}
-.rn-ans-btn.false-btn{right:16px;color:#ff6f8f;border-color:rgba(255,111,143,.7);font-size:48px;box-shadow:0 0 14px rgba(255,111,143,.45)}
-.rn-statement-panel{margin:0;padding:14px 16px;background:linear-gradient(160deg,#3a1e0a,#0b0f1a);border-top:1.5px solid rgba(255,166,77,.55);min-height:150px}
-.rn-statement{font-size:15px;line-height:1.8;color:#f2f5ff}
-.rn-statement .qimg{max-height:150px}
-.rn-statement .fill{color:#fde68a;font-weight:800;border-bottom:2px solid #fde68a;padding:0 2px}
-.rn-statement .fill.target{color:#0b0f1a;background:#fde68a;border-radius:6px;border:none;padding:1px 6px}
-.rn-hint{font-size:11.5px;color:#fdba74;margin-bottom:6px;font-weight:700}
-.rn-feedback{margin-top:8px;padding:8px 10px;border-radius:8px;font-size:12.5px;line-height:1.55;display:none}
-.rn-feedback.correct{background:rgba(6,214,160,.18);color:#5cffc0;display:block}
-.rn-feedback.wrong{background:rgba(239,71,111,.18);color:#ff8fa8;display:block}
+/* RUSH の問題画面：オンライン対戦（battle.html）と同じ形。半透明の枠の外側が時間のバー（12時から時計回りに減る） */
+#rushPanel:has(.rb-play){max-width:1240px;display:flex;flex-direction:column}
+.rb-play{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
+.rb-frame{position:relative;flex:1;min-height:330px;border-radius:22px;background:radial-gradient(600px 320px at 50% 115%,rgba(255,120,40,.45),transparent),linear-gradient(160deg,#3a1e0a,#0b0f1a)}
+.rb-tsvg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:2}
+.rb-tbg{fill:none;stroke:rgba(255,255,255,.15);stroke-width:6}
+.rb-tbar{fill:none;stroke:#06d6a0;stroke-width:6;stroke-linecap:round}
+.rb-hud{position:absolute;top:-11px;right:22px;z-index:3;font-size:14px;font-weight:800;color:#fff;background:rgba(6,10,20,.85);border:1px solid rgba(255,255,255,.25);padding:2px 10px;border-radius:20px}
+.rb-inner{position:absolute;inset:7px;border-radius:16px;background:rgba(8,12,26,.7);border:1px solid rgba(255,255,255,.14);display:flex;flex-direction:column;gap:12px;padding:14px;box-sizing:border-box;overflow-y:auto;color:#f2f5ff}
+.rb-q{position:relative;flex:0 0 auto;display:flex;flex-direction:column;gap:10px}
+.rb-tag{align-self:flex-start;font-size:12px;font-weight:700;color:#cbd5e1;background:rgba(255,255,255,.1);padding:3px 10px;border-radius:20px}
+.rb-q .rb-qimg{display:block;align-self:center;height:130px;width:auto;max-width:100%;object-fit:contain;background:#fff;border-radius:12px;padding:6px;box-sizing:border-box}
+.rb-qt{font-size:17px;line-height:1.7;font-weight:700}
+.rb-qt .blank{color:#94a3b8}
+.rb-qt .blank.target{color:#ffd166;border-color:#ffd166;background:rgba(255,209,102,.15)}
+.rb-fb{display:none;font-size:14px;line-height:1.6;padding:10px 12px;border-radius:10px}
+.rb-fb.wrong{display:block;background:rgba(239,71,111,.18);color:#ff9fb4}
+.rb-ch{flex:0 0 auto;display:flex;flex-direction:column;gap:8px}
+.rb-cbtn{display:flex;align-items:center;gap:10px;font:inherit;font-size:15px;font-weight:700;text-align:left;color:#fff;padding:10px 14px;border-radius:14px;cursor:pointer;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.35)}
+.rb-cbtn b{flex:0 0 auto;width:18px;color:#ffd166}
+.rb-cbtn span{flex:1;min-width:0}
+.rb-cbtn.ok{border-color:#06d6a0;background:rgba(6,214,160,.32)}
+.rb-cbtn.ng{border-color:#ef476f;background:rgba(239,71,111,.32)}
+.rb-cbtn:disabled{cursor:default;color:#fff}
+@media (orientation:landscape) and (min-width:700px){
+  .rb-inner{flex-direction:row;gap:18px;padding:18px;overflow:hidden}
+  .rb-q{flex:1.1 1 0;min-width:0;overflow-y:auto}
+  .rb-ch{flex:1 1 0;min-width:0;overflow-y:auto;justify-content:safe center}
+  .rb-qt{font-size:20px}
+  .rb-q .rb-qimg{height:180px}
+  .rb-cbtn{font-size:17px;padding:12px 16px}
+  .rb-fb{font-size:15px}
+}
+.rv-statement{line-height:1.7}
+.rv-statement .rb-qimg{display:block;max-width:100%;max-height:100px;margin-bottom:6px}
+.rb-cand{margin-top:8px;padding:6px 10px;border-radius:10px;background:rgba(244,185,66,.12);border:1px dashed #f4b942}
+.rv-explanation{color:#64748b;margin-top:6px;padding-top:6px;border-top:1px dashed #e2e8f0;line-height:1.5}
 .rn-review-item{padding:10px;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:8px;font-size:12.5px;line-height:1.7;background:#fff}
 .rn-review-item.is-wrong{border-color:#f7c3ce;background:#fff8f9}
 .rn-review-item .rv-head{display:flex;justify-content:space-between;align-items:center;color:#94a3b8;font-size:11px;margin-bottom:4px}
@@ -337,11 +347,6 @@ html[data-theme="navy"] .qprompt .qlead{color:#9db6d6}
 html[data-theme="navy"] .genreSelect,html[data-theme="navy"] .eg-levelbtn,html[data-theme="navy"] .rn-review-item{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.16);color:var(--ink)}
 html[data-theme="navy"] .genreSelect option{color:#000}
 html[data-theme="navy"] .qimg{background:#fff}
-@media (min-width:700px){
-  .rn-track{height:300px}
-  .rn-thermo{height:160px}
-  .rn-statement{font-size:20px}
-}
 </style>
 </head>
 <body>
@@ -371,6 +376,7 @@ html[data-theme="navy"] .qimg{background:#fff}
   <button data-view="home" class="active"><span class="ico">🧠</span>ドリル</button>
   <button data-view="challenge"><span class="ico">🏆</span>チャレンジ</button>
   <button data-view="rush"><span class="ico">🏃</span>RUSH</button>
+  <button data-view="battle"><span class="ico">⚔️</span>対戦</button>
   <button data-view="weak"><span class="ico">🎯</span>弱点特訓<span class="badge" id="weakBadge" style="display:none">0</span></button>
 </nav>
 
@@ -384,6 +390,7 @@ html[data-theme="navy"] .qimg{background:#fff}
 <!-- ログイン・ランキングは化学クエストと共通の部品を読み込む（このサイトは szs-physics.github.io なので完全なURLで指定） -->
 <script src="https://sense-of-wonder-lab.github.io/games/shared/leaderboard.js?v=45"></script>
 <script src="data.js?v=1"></script>
+<script src="fields.js?v=1"></script>
 <script>
 'use strict';
 /* 登録なしで全部のモードを遊べる。ログインが必要なのは全国ランキングに載せるときだけ（2026-11-05 先生） */
@@ -854,27 +861,28 @@ function chalResult(reachedEnd){
   chalPanel.parentElement.scrollTop=0;
 }
 
-/* ================= RUSH（化学RUSH！の○×ダッシュを流用） =================
-   穴に「正解」か「誤答のどれか」を入れた文を出し、正しければ○・誤りなら× */
+/* ================= RUSH（4択。問題画面はオンライン対戦と同じ形） =================
+   問題は fields.js の RUSH_FIELDS（オンライン対戦と共通）。ライフがなくなるまで何問正解できるか */
 const rushPanel=document.getElementById('rushPanel');
 const RUSH_DIFFS={
   easy:{label:'Easy',lives:5,sub:'ミス許容5回'},
   normal:{label:'Normal',lives:2,sub:'ミス許容2回'},
   hard:{label:'Hard',lives:1,sub:'ノーミス'}
 };
-const RUSH_Q_MS=10000;
+const RUSH_Q_MS=15000;  // 1問の制限時間（オンライン対戦の4択と同じ15秒）
 const RUSH_SCOPES=[
   {value:'all',label:'熱とエネルギー 全単元',kind:'rushAll',match:()=>true},
   ...CATEGORIES.map((c,i)=>({value:c.name,label:c.name,kind:'rush'+(i+1),match:cat=>cat===c.name}))
 ];
+const RUSH_CARDS=RUSH_FIELDS[0].decks.flatMap(d=>d.items);
 let rushScope='all', rush=null, lastRush=null;
 function rushScopeOf(v){return RUSH_SCOPES.find(s=>s.value===v)||RUSH_SCOPES[0];}
 function rushRank(correct){return correct>=50?'SS':correct>=30?'S':correct>=20?'A':correct>=10?'B':correct>=3?'C':'D';}
-/* 1問分の○×を作る：半分は正解を入れた正しい文、半分は誤答を入れた誤りの文 */
-function makeRushQ(it){
-  const truth=Math.random()<0.5;
-  const word=truth?it.correct:it.wrongs[Math.floor(Math.random()*it.wrongs.length)];
-  return {it,word,answer:truth};
+/* カード1枚を出題の形に（選択肢の並びは毎回変える。fix のものはそのまま） */
+function rushQ(card){
+  const idx=card.c.map((_,i)=>i), order=card.fix?idx:shuffle(idx.slice());
+  const pic=card.img?`<img class="rb-qimg" src="assets/${esc(card.img)}" alt="図">`:'';
+  return {card,pic,choices:order.map(i=>({html:card.c[i],ok:card.k.includes(i)}))};
 }
 function renderRushHome(){
   rush=null;
@@ -882,7 +890,7 @@ function renderRushHome(){
   rushPanel.innerHTML=`
     <h2>🏃 物理RUSH！</h2>
     <div class="card-ui" id="rushStartArea">
-      <div class="muted">黄色の言葉が入った文が正しければ<b>○</b>、間違っていれば<b>×</b>。1問<b>10秒</b>、間違えるとライフが減るよ。範囲を選んで、難易度ボタンを押すとすぐスタート!</div>
+      <div class="muted">穴【？】に入る言葉を選ぼう。1問<b>15秒</b>、まちがえるとライフが減るよ。何問正解できるかな？ 範囲を選んで、難易度ボタンを押すとすぐスタート!</div>
       <select class="genreSelect" id="rushScopeSel" style="margin-top:12px">${RUSH_SCOPES.map(s=>`<option value="${esc(s.value)}" ${s.value===rushScope?'selected':''}>${esc(s.label)}</option>`).join('')}</select>
       <div class="eg-levelgrid">${Object.keys(RUSH_DIFFS).map(k=>{const d=RUSH_DIFFS[k];return `<button class="eg-levelbtn" data-diff="${k}"><span><span class="eg-lv-name">${d.label}</span><span class="eg-lv-sub">${d.sub}</span></span><span class="eg-lv-best">${k==='hard'?'🏆 全国ランキング対応':''}</span></button>`;}).join('')}</div>
     </div>
@@ -894,74 +902,83 @@ function renderRushHome(){
 }
 function startRush(diff){
   const d=RUSH_DIFFS[diff], sc=rushScopeOf(rushScope);
-  rush={pool:shuffle(ITEMS.filter(it=>sc.match(it.cat))),idx:0,lives:d.lives,maxLives:d.lives,diff,scope:rushScope,
-        correct:0,total:0,history:[],t0:Date.now(),timer:null,next:null,answered:false,q:null};
-  rushPanel.innerHTML=`
-    <div class="card-ui rn-card">
-      <div class="rn-track">
-        <div class="rn-header-row"><span class="rn-genretag" id="rnTag">-</span><span class="life-hearts" id="rnHearts"></span></div>
-        <div class="rn-timer-bar"><div class="rn-timer-fill" id="rnTimerFill"></div></div>
-        <div class="rn-score" id="rnScore"></div>
-        <div class="rn-thermo"><div class="rn-thermo-fill" id="rnThermo"></div></div>
-        <button class="rn-ans-btn true-btn" id="rnTrue">○</button>
-        <button class="rn-ans-btn false-btn" id="rnFalse">×</button>
-      </div>
-      <div class="rn-statement-panel">
-        <div class="rn-hint">黄色の言葉は正しい？</div>
-        <div class="rn-statement" id="rnStatement"></div>
-        <div class="rn-feedback" id="rnFeedback"></div>
-      </div>
-    </div>`;
-  document.getElementById('rnTrue').onclick=()=>rushAnswer(true);
-  document.getElementById('rnFalse').onclick=()=>rushAnswer(false);
+  rush={pool:shuffle(RUSH_CARDS.filter(c=>sc.match(c.cat))),idx:0,lives:d.lives,maxLives:d.lives,diff,scope:rushScope,
+        correct:0,total:0,history:[],t0:Date.now(),timer:null,next:null,answered:false,q:null,ro:null};
+  rushPanel.innerHTML=`<div class="rb-play">
+    <div class="rb-frame" id="rbFrame">
+      <svg class="rb-tsvg" aria-hidden="true"><path class="rb-tbg" id="rbTbg"/><path class="rb-tbar" id="rbTbar" pathLength="1000"/></svg>
+      <span class="rb-hud" id="rbHud"></span>
+      <div class="rb-inner" id="rbInner"><div class="rb-q" id="rbQ"></div><div class="rb-ch" id="rbCh"></div></div>
+    </div></div>`;
+  if(window.ResizeObserver){rush.ro=new ResizeObserver(rushFramePath);rush.ro.observe(document.getElementById('rbFrame'));}
+  rushFramePath();
   rushNext();
 }
+/* 時間のバーの通り道：枠の上の真ん中（12時）から時計回りに一周 */
+function rushFramePath(){
+  const f=document.getElementById('rbFrame'); if(!f)return;
+  const w=f.clientWidth,h=f.clientHeight,i=3,r=19; if(!w||!h)return;
+  const d=`M${w/2},${i} H${w-i-r} A${r},${r} 0 0 1 ${w-i},${i+r} V${h-i-r} A${r},${r} 0 0 1 ${w-i-r},${h-i} H${i+r} A${r},${r} 0 0 1 ${i},${h-i-r} V${i+r} A${r},${r} 0 0 1 ${i+r},${i} Z`;
+  document.getElementById('rbTbar').setAttribute('d',d);document.getElementById('rbTbg').setAttribute('d',d);
+}
+function rushDrawTime(left){
+  const bar=document.getElementById('rbTbar'); if(!bar)return;
+  bar.setAttribute('stroke-dasharray',`0 ${(1-left)*1000} ${left*1000} 1000`);
+  bar.style.stroke=left>.5?'#06d6a0':left>.2?'#ffd166':'#ef476f';
+}
 function rushClear(){if(!rush)return;clearInterval(rush.timer);clearTimeout(rush.next);rush.timer=rush.next=null;}
+function rushStop(){if(!rush)return;rushClear();if(rush.ro)rush.ro.disconnect();}
 function rushHUD(){
   let h='';for(let i=0;i<rush.maxLives;i++)h+=i<rush.lives?'❤️':'🖤';
-  document.getElementById('rnHearts').textContent=h;
-  document.getElementById('rnScore').textContent=`${rush.correct}問正解`;
+  document.getElementById('rbHud').textContent=`✅ ${rush.correct}問　${h}`;
 }
 function rushNext(){
   if(rush.idx>=rush.pool.length){rush.pool=shuffle(rush.pool);rush.idx=0;}
-  rush.q=makeRushQ(rush.pool[rush.idx]);
+  const q=rush.q=rushQ(rush.pool[rush.idx]);
   rush.answered=false;
-  const it=rush.q.it;
-  document.getElementById('rnTag').textContent=it.cat;
-  document.getElementById('rnStatement').innerHTML=(it.img?`<img class="qimg" src="assets/${it.img}" alt="図">`:'')+filledText(it,rush.q.word);
-  const fb=document.getElementById('rnFeedback'); fb.className='rn-feedback'; fb.style.display='none';
-  document.getElementById('rnTrue').disabled=document.getElementById('rnFalse').disabled=false;
+  document.getElementById('rbQ').innerHTML=`<span class="rb-tag">${esc(q.card.cat)}</span>${q.pic}<div class="rb-qt">${q.card.q}</div><div class="rb-fb" id="rbFb"></div>`;
+  const ch=document.getElementById('rbCh');
+  ch.innerHTML=q.choices.map((c,i)=>`<button class="rb-cbtn" data-i="${i}"><b>${i+1}</b><span>${c.html}</span></button>`).join('');
+  ch.querySelectorAll('.rb-cbtn').forEach(b=>b.onclick=()=>rushAnswer(+b.dataset.i));
+  document.getElementById('rbInner').scrollTop=0;
   rushHUD();
-  const t0=Date.now(), fill=document.getElementById('rnTimerFill'), th=document.getElementById('rnThermo');
+  const t0=Date.now();
+  rushDrawTime(1);
   rush.timer=setInterval(()=>{
-    const ratio=Math.max(0,1-(Date.now()-t0)/RUSH_Q_MS);
-    fill.style.width=(ratio*100)+'%';
-    fill.style.background=ratio>.5?'#06d6a0':ratio>.2?'#ffd166':'#ef476f';
-    th.style.height=(8+(1-ratio)*88)+'%';  // 時間がたつほど温度計の液が上がる
-    if(ratio<=0)rushAnswer(null);
+    const left=Math.max(0,1-(Date.now()-t0)/RUSH_Q_MS);
+    rushDrawTime(left);
+    if(left<=0)rushAnswer(null);
   },100);
 }
-function rushAnswer(user){
+/* picked: 選んだ番号（時間切れは null） */
+function rushAnswer(picked){
   if(!rush||rush.answered)return;
   rush.answered=true;
   rushClear();
-  const q=rush.q, timeout=user===null, ok=!timeout&&user===q.answer;
+  const q=rush.q, ok=picked!=null&&q.choices[picked].ok;
   rush.total++;
   if(ok)rush.correct++; else rush.lives--;
-  LB.recordQuizResults(GAME_ID+'rush',[{id:q.it.id,ok}]);
-  rush.history.push({q,ok,user});
-  document.getElementById('rnTrue').disabled=document.getElementById('rnFalse').disabled=true;
-  const fb=document.getElementById('rnFeedback');
-  fb.className='rn-feedback '+(ok?'correct':'wrong');
-  fb.style.display='block';
-  fb.innerHTML=ok?'⭕ 正解!':`${timeout?'⏰ 時間切れ!':'❌ 残念!'} 正解は「${q.answer?'正しい(○)':'誤り(×)'}」。この穴に入るのは「${lbl(q.it.correct)}」。${fmt(q.it.exp||'')}`;
+  LB.recordQuizResults(GAME_ID+'rush',[{id:q.card.id,ok}]);
+  rush.history.push({q,ok,picked});
+  document.querySelectorAll('#rbCh .rb-cbtn').forEach((b,i)=>{
+    b.disabled=true;
+    if(q.choices[i].ok)b.classList.add('ok'); else if(i===picked)b.classList.add('ng');
+  });
+  rushDrawTime(0);
+  // 正解は選択肢の枠が緑になるだけ。不正解・時間切れのときだけ解説を出す（オンライン対戦と同じ）
+  if(!ok){
+    const fb=document.getElementById('rbFb'), inner=document.getElementById('rbInner');
+    fb.className='rb-fb wrong';
+    fb.innerHTML=(picked!=null?'❌ 残念！ 緑が正解。 ':'⏰ 時間切れ！ 緑が正解。 ')+q.card.e;
+    if(inner.scrollHeight>inner.clientHeight)fb.scrollIntoView({block:'nearest',behavior:'smooth'});
+  }
   rushHUD();
-  if(rush.lives<=0)rush.next=setTimeout(finishRush,1600);
+  if(rush.lives<=0)rush.next=setTimeout(finishRush,2200);
   else rush.next=setTimeout(()=>{rush.idx++;rushNext();},ok?900:2600);
 }
 function finishRush(){
   if(!rush)return;
-  rushClear();
+  rushStop();
   const sc=rushScopeOf(rush.scope), sec=Math.floor((Date.now()-rush.t0)/1000);
   const eligible=rush.diff==='hard', rank=eligible?rushRank(rush.correct):null;
   if(eligible)pushBest(sc.kind,{correct:rush.correct,sec,rank});
@@ -991,12 +1008,15 @@ function renderRushResult(){
 }
 function renderRushReview(){
   const h=lastRush.history;
-  const rows=h.filter(x=>!x.ok).concat(h.filter(x=>x.ok)).map(x=>`
+  const rows=h.filter(x=>!x.ok).concat(h.filter(x=>x.ok)).map(x=>{
+    const c=x.q.card, right=c.k.map(i=>c.c[i]).join('・');
+    const mine=x.picked==null?'時間切れ':x.q.choices[x.picked].html;
+    return `
     <div class="rn-review-item ${x.ok?'':'is-wrong'}">
-      <div class="rv-head"><span>${esc(x.q.it.cat)}</span><span class="rv-mark ${x.ok?'correct':'wrong'}">${x.ok?'○ 正解':'× 不正解'}</span></div>
-      <div>${filledText(x.q.it,x.q.word)}</div>
-      <div class="muted">あなたの答え：<b>${x.user===null?'時間切れ':x.user?'○':'×'}</b>　／　正解：<b>${x.q.answer?'○':'×'}</b>　／　穴に入るのは「<b>${lbl(x.q.it.correct)}</b>」</div>
-    </div>`).join('');
+      <div class="rv-head"><span>${esc(c.cat)}</span><span class="rv-mark ${x.ok?'correct':'wrong'}">${x.ok?'○ 正解':'× 不正解'}</span></div>
+      <div class="rv-statement">${x.q.pic}<div>${c.q}</div><div class="rb-cand">正解：<b>${right}</b>${x.ok?'':`　／　あなたの答え：${mine}`}</div></div>
+      ${c.e?`<div class="rv-explanation">${c.e}</div>`:''}
+    </div>`;}).join('');
   rushPanel.innerHTML=`<h2>📋 今回の振り返り</h2>${rows||'<div class="muted">振り返る問題がありません。</div>'}<button class="bigbtn secondary" id="rnReviewBack">戻る</button>`;
   document.getElementById('rnReviewBack').onclick=renderRushResult;
   rushPanel.parentElement.scrollTop=0;
@@ -1056,6 +1076,8 @@ function switchView(view){
   if(view==='rush'&&!rush)renderRushHome();
   if(view==='weak'&&!drill)renderWeakHome();
 }
+// 「対戦」はオンライン対戦のページ（battle.html）へ移る
+function goView(v){if(v==='battle')location.href='battle.html';else switchView(v);}
 document.querySelectorAll('nav button').forEach(b=>{
   b.addEventListener('click',()=>{
     const target=b.dataset.view;
@@ -1063,13 +1085,13 @@ document.querySelectorAll('nav button').forEach(b=>{
     const playing=(active==='challenge'&&chal&&!chal.over)||(active==='rush'&&rush);
     if(playing&&target!==active){
       confirmDialog(active==='rush'?'RUSHを終了しますか？記録は保存されません。':'チャレンジを終了しますか？記録は保存されません。',()=>{
-        if(active==='rush'){rushClear();rush=null;}
+        if(active==='rush'){rushStop();rush=null;}
         else{stopChalTimer();chal.over=true;chal=null;}
-        switchView(target);
+        goView(target);
       });
       return;
     }
-    switchView(target);
+    goView(target);
   });
 });
 
