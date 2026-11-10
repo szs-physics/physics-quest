@@ -284,6 +284,7 @@ html[data-theme="navy"] #toast{background:rgba(19,32,56,.95);border:1px solid rg
 header{background:#7c2d12}
 header .title{display:flex;flex-direction:column;line-height:1.25}
 .blank{display:inline-block;min-width:3.2em;text-align:center;color:#94a3b8;font-weight:600}
+.blank.key{min-width:0;color:#b91c1c;font-weight:800;background:linear-gradient(transparent 60%,#fde68a 60%);padding:0 1px}
 .blank.target{min-width:4em;color:var(--red);background:#fef2f2;border:2px solid var(--red);border-radius:8px;padding:0 6px;margin:0 2px;font-weight:800}
 .qprompt .qlead{font-size:12px;font-weight:700;color:#64748b;margin-bottom:6px}
 .qprompt .qtext{line-height:1.9}
@@ -342,6 +343,7 @@ header .title{display:flex;flex-direction:column;line-height:1.25}
 .rn-review-item .rv-mark.wrong{color:#ef476f}
 .rn-review-item .fill{font-weight:800;text-decoration:underline}
 html[data-theme="navy"] .blank{color:#7f97b3}
+html[data-theme="navy"] .blank.key{color:#fca5a5;background:linear-gradient(transparent 60%,rgba(253,230,138,.35) 60%)}
 html[data-theme="navy"] .blank.target{background:rgba(255,111,111,.15)}
 html[data-theme="navy"] .qprompt .qlead{color:#9db6d6}
 html[data-theme="navy"] .genreSelect,html[data-theme="navy"] .eg-levelbtn,html[data-theme="navy"] .rn-review-item{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.16);color:var(--ink)}
@@ -426,11 +428,14 @@ function esc(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','
 function fmt(t){return esc(t).replace(/\^\{([^}]*)\}/g,'<sup>$1</sup>').replace(/_\{([^}]*)\}/g,'<sub>$1</sub>');}
 const BLANK_RE=/\{\{([0-9①②]+)\}\}/g;
 /* 4択用：聞いている穴だけ【 ？ 】、同じ文の他の穴は〔　〕のまま */
-function blankText(it){
-  return fmt(it.q).replace(BLANK_RE,(_,k)=>k===it.blank?'<span class="blank target">？</span>':'<span class="blank">〔　　〕</span>').replace(/\n/g,'<br>');
+/* fill:true（チャレンジ）は、聞いていない穴に正しい語句を（　）つきで入れて強調する（大切な語句なので） */
+function blankText(it,fill){
+  return fmt(it.q).replace(BLANK_RE,(_,k)=>k===it.blank?'<span class="blank target">？</span>'
+    :(fill&&it.fills&&it.fills[k])?`<span class="blank key">（<b>${fmt(it.fills[k])}</b>）</span>`
+    :'<span class="blank">〔　　〕</span>').replace(/\n/g,'<br>');
 }
-function qHTML(it){
-  return `${it.img?`<img class="qimg" src="assets/${it.img}" alt="図">`:''}<div class="qtext">${blankText(it)}</div>`;
+function qHTML(it,fill){
+  return `${it.img?`<img class="qimg" src="assets/${it.img}" alt="図">`:''}<div class="qtext">${blankText(it,fill)}</div>`;
 }
 /* RUSH・復習用：穴に言葉を入れた文。聞いている穴には word を入れる */
 function filledText(it,word){
@@ -800,7 +805,7 @@ function renderChalQuiz(el,it,progressText,timeLimitSec,onDone){
   el.innerHTML=`
     <div class="chal-head">${progressText}</div>
     <div class="chal-timer" id="chalTimer">⏱ ${timeLimitSec}秒</div>
-    <div class="qprompt">${qHTML(it)}</div>
+    <div class="qprompt">${qHTML(it,true)}</div>
     ${choicesHTML(choices)}`;
   let answered=false;
   function finish(ok,timedOut,picked){
