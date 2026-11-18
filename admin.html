@@ -157,7 +157,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="data.js?v=1"></script>
+<script src="data.js?v=2"></script>
 <script>
 'use strict';
 /* ログイン・データベースは化学クエストと共通（../Sense-of-Wonder-Lab.github.io/games/shared/admin.html と同じ設定）。
@@ -179,10 +179,14 @@ const MEMO_KEY = 'physicsAdminMemos_v1'; // メモはこのブラウザにだけ
 
 const CATEGORIES = DATA.categories, ITEMS = DATA.items;
 const RANK_KINDS = [
-  ['score','チャレンジ：連続正解'], ['time','チャレンジ：1分間タイムアタック'],
-  ['rushAll','RUSH Hard：全単元'],
-  ['rushG1','RUSH Hard：前半 1〜6'], ['rushG2','RUSH Hard：中盤 7〜11'], ['rushG3','RUSH Hard：後半 12〜15'],
-  ...CATEGORIES.map((c,i)=>['rush'+(i+1), 'RUSH Hard：'+c.name])
+  ['score','熱｜チャレンジ：連続正解'], ['time','熱｜チャレンジ：1分間タイムアタック'],
+  ['rushAll','熱｜RUSH Hard：全単元'],
+  ['rushG1','熱｜RUSH Hard：前半 1〜6'], ['rushG2','熱｜RUSH Hard：中盤 7〜11'], ['rushG3','熱｜RUSH Hard：後半 12〜15'],
+  ...CATEGORIES.filter(c=>c.field==='heat').map((c,i)=>['rush'+(i+1), '熱｜RUSH Hard：'+c.name]),
+  // 波（kind は index.html と同じ：チャレンジ scoreW・timeW、RUSH rushW・rushW1〜）
+  ['scoreW','波｜チャレンジ：連続正解'], ['timeW','波｜チャレンジ：1分間タイムアタック'],
+  ['rushW','波｜RUSH Hard：全単元'],
+  ...CATEGORIES.filter(c=>c.field==='wave').map((c,i)=>['rushW'+(i+1), '波｜RUSH Hard：'+c.name])
 ];
 
 /* leaderboard.js が Firebase で使えない文字を含むキーをエスケープしているので戻す */
@@ -200,7 +204,7 @@ const db = firebase.database();
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function fmt(t){ return esc(t).replace(/\^\{([^}]*)\}/g,'<sup>$1</sup>').replace(/_\{([^}]*)\}/g,'<sub>$1</sub>'); }
-const BLANK_RE = /\{\{([0-9①②]+)\}\}/g;
+const BLANK_RE = /\{\{([0-9①②ア-ン]+)\}\}/g;  // 熱は数字、波はカタカナの穴
 function blankText(it){
   return fmt(it.q).replace(BLANK_RE,(_,k)=>k===it.blank?'<span class="blank target">？</span>':'<span class="blank">〔　〕</span>').replace(/\n/g,'<br>');
 }

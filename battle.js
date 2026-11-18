@@ -43,7 +43,7 @@ const RB=(function(){
     if(typeof RUSH_FIELDS!=='undefined') return Promise.resolve();
     if(!fieldsP) fieldsP=new Promise((resolve,reject)=>{
       const s=document.createElement('script');
-      s.src='fields.js?v=3';
+      s.src='fields.js?v=4';
       s.onload=resolve;
       s.onerror=()=>{ fieldsP=null; s.remove(); reject(new Error('問題データを読み込めませんでした。通信を確認してね')); };
       document.head.appendChild(s);
@@ -56,17 +56,25 @@ const RB=(function(){
   const FIELD_STUBS=[BASICS];
   const fieldList=()=>typeof RUSH_FIELDS!=='undefined'?RUSH_FIELDS:FIELD_STUBS;
   const fieldOf=key=>(typeof RUSH_FIELDS!=='undefined'&&RUSH_FIELDS.find(f=>f.key===key))||null;
-  // genre："F:phy"（全範囲）／"F:phy:g1"（前半・中盤・後半。fields.js の groups）／"F:phy:3"（単元1つ。decks の添字）
+  // genre："F:phy"（全分野）／"F:phy:gh" "F:phy:g1"（分野・前半など。fields.js の groups）／"F:phy:3"（単元1つ。decks の添字）
+  //        ／"F:phy:s0.4.16"（自由選択：選んだ単元の添字を . でつなぐ）
   // decks は出題する単元の添字の一覧（null は全部）
+  const FREE='FREE';  // 範囲の一覧の「自由選択」
+  const groupName=g=>g.from?`${g.name} ${g.from}〜${g.to}`:g.name;
   function parseScope(genre){
-    const m=/^F:(\w+)(?::(\d+|g\d+))?$/.exec(genre||'');
+    const m=/^F:(\w+)(?::(\d+|g\w+|s[\d.]+))?$/.exec(genre||'');
     if(!m) return null;
     const field=fieldOf(m[1]);
-    if(m[2]==null) return {field, decks:null, name:'全範囲'};
+    if(m[2]==null) return {field, decks:null, name:'全分野'};
     if(!field) return {field, decks:null, name:''};
     if(m[2][0]==='g'){
       const g=(field.groups||[]).find(x=>x.key===m[2]);
-      return g ? {field, decks:g.decks, name:`${g.name} ${g.from}〜${g.to}`} : {field, decks:null, name:'全範囲'};
+      return g ? {field, decks:g.decks, name:groupName(g)} : {field, decks:null, name:'全分野'};
+    }
+    if(m[2][0]==='s'){
+      const ds=m[2].slice(1).split('.').map(Number).filter(i=>field.decks[i]);
+      const names=ds.map(i=>field.decks[i].name);
+      return {field, decks:ds.length?ds:null, name:'自由選択（'+(names.length<=3?names.join('・'):names.length+'単元')+'）'};
     }
     const i=+m[2];
     return {field, decks:[i], name:field.decks[i]?field.decks[i].name:''};
@@ -81,8 +89,9 @@ const RB=(function(){
     const f=fieldOf(fkey); if(!f) return [];
     const total=f.decks.reduce((n,d)=>n+d.items.length,0);
     const count=ds=>ds.reduce((n,i)=>n+f.decks[i].items.length,0);
-    return [{value:'F:'+f.key,label:`熱とエネルギー 全単元（${total}問）`}]
-      .concat((f.groups||[]).map(g=>({value:'F:'+f.key+':'+g.key,label:`${g.name}　${g.from}〜${g.to}（${count(g.decks)}問）`})))
+    return [{value:'F:'+f.key,label:`全分野（熱とエネルギー＋波）（${total}問）`},
+            {value:FREE,label:'✅ 自由選択（単元を自分で選ぶ）'}]
+      .concat((f.groups||[]).map(g=>({value:'F:'+f.key+':'+g.key,label:`${g.from?g.name+'　'+g.from+'〜'+g.to:g.name}（${count(g.decks)}問）`})))
       .concat(f.decks.map((d,i)=>({value:'F:'+f.key+':'+i,label:`${d.name}（${d.items.length}問）`})));
   }
   let cardIndex={};
@@ -943,6 +952,7 @@ const RB=(function(){
         <div class="rb-fields" id="rbFields" style="display:none">${fieldBtns()}</div>
         <b>範囲を選んでルームを作る</b>
         <select class="genreSelect" id="rbGenre" style="margin-top:8px"></select>
+        <div class="rb-free" id="rbFree" style="display:none"></div>
         <button class="bigbtn" id="rbCreate" style="margin-top:10px">ルームを作る</button>
       </div>
       <div class="card-ui">
@@ -968,19 +978,48 @@ const RB=(function(){
         : '<option value="">問題データを読み込み中…</option>';
       sel.disabled=createBtn.disabled=!opts.length;
     };
-    const bindFields=()=>panel.querySelectorAll('.rb-field').forEach(b=>b.onclick=()=>{ field=b.dataset.f; err.textContent=''; drawScopes(); });
-    bindFields(); drawScopes();
+    /* 自由選択：分野ごとに単元のチェックボックスを並べる（前回選んだ単元にチェックを入れておく） */
+    const freeBox=document.getElementById('rbFree');
+    let freePicked=new Set(pref.free||[]);
+    const drawFree=()=>{
+      const f=fieldOf(field);
+      freeBox.style.display=sel.value===FREE&&f?'':'none';
+      if(sel.value!==FREE||!f) return;
+      const byField={};
+      f.decks.forEach((d,i)=>{ (byField[d.field]=byField[d.field]||[]).push(i); });
+      const labelOf=k=>{ const g=(f.groups||[]).find(x=>x.field===k&&!x.from); return g?g.name.replace(/ 全単元$/,''):k; };
+      const total=[...freePicked].reduce((n,i)=>n+(f.decks[i]?f.decks[i].items.length:0),0);
+      freeBox.innerHTML=Object.entries(byField).map(([k,ids])=>`
+        <div class="rb-free-head"><b>${esc(labelOf(k))}</b>
+          <button type="button" class="rb-free-all" data-k="${esc(k)}">${ids.every(i=>freePicked.has(i))?'全部はずす':'全部選ぶ'}</button></div>
+        ${ids.map(i=>`<label class="rb-free-item"><input type="checkbox" value="${i}" ${freePicked.has(i)?'checked':''}><span>${esc(f.decks[i].name)}</span><small>${f.decks[i].items.length}問</small></label>`).join('')}`).join('')
+        +`<div class="muted rb-free-count">選んだ単元：${freePicked.size}（${total}問）</div>`;
+      freeBox.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.onchange=()=>{ cb.checked?freePicked.add(+cb.value):freePicked.delete(+cb.value); drawFree(); });
+      freeBox.querySelectorAll('.rb-free-all').forEach(b=>b.onclick=()=>{
+        const ids=byField[b.dataset.k], all=ids.every(i=>freePicked.has(i));
+        ids.forEach(i=>all?freePicked.delete(i):freePicked.add(i)); drawFree();
+      });
+    };
+    sel.onchange=()=>{ err.textContent=''; drawFree(); };
+    const bindFields=()=>panel.querySelectorAll('.rb-field').forEach(b=>b.onclick=()=>{ field=b.dataset.f; err.textContent=''; drawScopes(); drawFree(); });
+    bindFields(); drawScopes(); drawFree();
     loadAll().then(res=>{
       // 読み終わったら範囲の一覧だけ入れ替える（その間に別の画面へ移っていたら何もしない）
       if(room||document.getElementById('rbGenre')!==sel) return;
-      drawScopes();
+      drawScopes(); drawFree();
       const bad=res.find(x=>x.status==='rejected');
       if(bad) err.textContent=bad.reason.message;
     });
     createBtn.onclick=()=>{
       if(!sel.value) return;
-      saveFieldPref({field,genre:sel.value});
-      run(createRoom(sel.value));
+      let genre=sel.value;
+      if(genre===FREE){
+        const f=fieldOf(field), ids=[...freePicked].filter(i=>f&&f.decks[i]).sort((a,b)=>a-b);
+        if(!ids.length){ err.textContent='単元を1つ以上選んでね'; return; }
+        genre=ids.length===f.decks.length ? 'F:'+f.key : 'F:'+f.key+':s'+ids.join('.');
+        saveFieldPref({field,genre:FREE,free:ids});
+      }else saveFieldPref({field,genre,free:[...freePicked]});
+      run(createRoom(genre));
     };
     const code=document.getElementById('rbCode');
     code.oninput=()=>{ code.value=code.value.replace(/\D/g,'').slice(0,4); };

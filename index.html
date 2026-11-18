@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#7c2d12">
-<meta name="description" content="物理基礎「熱とエネルギー」の穴埋めを4択で練習。登録なしで遊べます。">
-<title>物理基礎クエスト 〜熱とエネルギー〜</title>
+<meta name="description" content="物理基礎（熱とエネルギー・波）の穴埋めを4択で練習。登録なしで遊べます。">
+<title>物理基礎クエスト</title>
 <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('swTheme')||'default');</script>
 <style>
 :root{
@@ -294,6 +294,7 @@ html[data-theme="navy"] #toast{background:rgba(19,32,56,.95);border:1px solid rg
 /* ===== 物理基礎クエスト（ここから下は化学クエストの見た目に足した分） ===== */
 header{background:#7c2d12}
 header .title{display:flex;flex-direction:column;line-height:1.25}
+header .fieldSelect{align-self:flex-start;margin-top:2px;font-size:12px;padding:2px 6px}
 .blank{display:inline-block;min-width:3.2em;text-align:center;color:#94a3b8;font-weight:600}
 .blank.key{min-width:0;color:#b91c1c;font-weight:800;background:linear-gradient(transparent 60%,#fde68a 60%);padding:0 1px}
 .blank.target{min-width:4em;color:var(--red);background:#fef2f2;border:2px solid var(--red);border-radius:8px;padding:0 6px;margin:0 2px;font-weight:800}
@@ -366,7 +367,7 @@ html[data-theme="navy"] .qimg{background:#fff}
 <body>
 
 <header>
-  <div class="title"><span>物理基礎クエスト</span><span class="sub">熱とエネルギー</span></div>
+  <div class="title"><span>物理基礎クエスト</span><select class="questSelect fieldSelect" id="fieldSelect" title="分野"></select></div>
   <button class="themeBtn" id="themeBtn" title="テーマ切替">🎨</button>
   <span class="accountBtnWrap"><button class="accountBtn" id="accountBtn" title="アカウント">👤</button><span class="lb-notif-badge" id="notifBadge" style="display:none">0</span></span>
 </header>
@@ -403,8 +404,8 @@ html[data-theme="navy"] .qimg{background:#fff}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <!-- ログイン・ランキングは化学クエストと共通の部品を読み込む（このサイトは szs-physics.github.io なので完全なURLで指定） -->
 <script src="https://sense-of-wonder-lab.github.io/games/shared/leaderboard.js?v=45"></script>
-<script src="data.js?v=1"></script>
-<script src="fields.js?v=3"></script>
+<script src="data.js?v=2"></script>
+<script src="fields.js?v=4"></script>
 <script>
 'use strict';
 /* 登録なしで全部のモードを遊べる。ログインが必要なのは全国ランキングに載せるときだけ（2026-11-05 先生） */
@@ -435,10 +436,16 @@ document.getElementById('themeBtn').onclick=()=>{
 const CATEGORIES=DATA.categories;
 const ITEMS=DATA.items;
 const IMAP=Object.fromEntries(ITEMS.map(it=>[it.id,it]));
+/* 分野（熱とエネルギー・波）。ヘッダーで切り替える。ドリル・チャレンジ・RUSH はいまの分野の問題だけ出す（弱点特訓は全分野） */
+const FIELDS=DATA.fields;
+function curField(){return FIELDS.some(f=>f.key===state.field)?state.field:FIELDS[0].key;}
+function fieldLabel(){return FIELDS.find(f=>f.key===curField()).label;}
+function fieldCats(){return CATEGORIES.filter(c=>c.field===curField());}
+function fieldItems(){return ITEMS.filter(it=>it.field===curField());}
 function esc(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 /* ^{上付き} _{下付き} を表示用に */
 function fmt(t){return esc(t).replace(/\^\{([^}]*)\}/g,'<sup>$1</sup>').replace(/_\{([^}]*)\}/g,'<sub>$1</sub>');}
-const BLANK_RE=/\{\{([0-9①②]+)\}\}/g;
+const BLANK_RE=/\{\{([0-9①②ア-ン]+)\}\}/g;  // 熱は数字、波はカタカナの穴
 /* 4択用：聞いている穴だけ【 ？ 】、同じ文の他の穴は〔　〕のまま */
 /* 聞いていない穴には正しい語句を（　）つきで入れて強調する（大切な語句なので）。全モード共通。
    fill=false のときだけ〔　〕の空欄にする */
@@ -622,7 +629,7 @@ let catSort={field:'no',dir:'asc'};
 const RAND_SUFFIX=/｜ランダム$/;
 function statKey(cat,order){return order==='rand'?cat+'｜ランダム':cat;}
 function sortedCategories(){
-  const arr=CATEGORIES.map((c,i)=>({c,i}));
+  const arr=fieldCats().map((c,i)=>({c,i}));
   arr.sort((a,b)=>{
     let av=a.i,bv=b.i;
     if(catSort.field==='pct'){
@@ -659,7 +666,7 @@ function renderHome(){
   const arrow=catSort.dir==='asc'?'▲':'▼';
   homePanel.innerHTML=`
     <div class="card-ui">
-      <div style="font-size:13.5px;line-height:1.8">テキスト「熱とエネルギー」の穴埋めを4択で練習。赤い <span class="blank target">？</span> に入る言葉を選ぼう。<b>間違えた問題は弱点特訓に自動追加</b>されます。</div>
+      <div style="font-size:13.5px;line-height:1.8">テキスト「${fieldLabel()}」の穴埋めを4択で練習。赤い <span class="blank target">？</span> に入る言葉を選ぼう。<b>間違えた問題は弱点特訓に自動追加</b>されます。</div>
     </div>
     <div class="card-ui">
       <div class="decklist-head">
@@ -788,25 +795,32 @@ function selfBestHTML(kind){
 const chalPanel=document.getElementById('chalPanel');
 let chal=null, chalKind='score', chalTimerIv=null;
 function stopChalTimer(){if(chalTimerIv){clearInterval(chalTimerIv);chalTimerIv=null;}}
+/* ランキングの kind：熱は 'score'・'time'（はじめからの記録をそのまま使う）、波は 'scoreW'・'timeW' */
+const chalKindOf=base=>curField()==='heat'?base:base+'W';
+const chalBase=kind=>kind.replace(/W$/,'');
 const CHAL_DESC={
-  score:'全単元からランダム出題。<b>1問15秒</b>以内に正解し続けよう。<b>1問でも間違えたらゲームオーバー</b>、そこまでの連続正解数でランクが決まる!',
+  score:'いまの分野の全単元からランダム出題。<b>1問15秒</b>以内に正解し続けよう。<b>1問でも間違えたらゲームオーバー</b>、そこまでの連続正解数でランクが決まる!',
   time:'制限時間<b>1分</b>で何問正解できるか挑戦!<b>1問でも間違えたらゲームオーバー</b>、時間内に正解できた数でランクが決まる!'
 };
 const CHAL_TIME_LIMIT=60, CHAL_Q_SEC=15;  // 穴埋めは文を読むので化学(10秒)より長め
 function chalRank(kind,correct,reachedEnd){
+  kind=chalBase(kind);
   if(kind==='time')return correct>=12?'S':correct>=9?'A':correct>=6?'B':correct>=3?'C':'D';
   if(reachedEnd)return 'SSS';
   return correct>=60?'SS':correct>=40?'S':correct>=20?'A':correct>=10?'B':correct>=5?'C':'D';
 }
 LB.setRankFn((kind,e)=>{
   const n=e.correct||0;
-  if(kind==='score'||kind==='time')return chalRank(kind,n,kind==='score'&&(e.rank==='SSS'||n>=ITEMS.length));
+  if(['score','time','scoreW','timeW'].includes(kind)){
+    const all=ITEMS.filter(it=>it.field===(kind.endsWith('W')?'wave':'heat')).length;
+    return chalRank(kind,n,chalBase(kind)==='score'&&(e.rank==='SSS'||n>=all));
+  }
   if(kind.startsWith('rush'))return rushRank(n);
   return null;
 });
 function renderChallengeHome(){
   chalPanel.innerHTML=`
-    <h2>🏆 チャレンジモード</h2>
+    <h2>🏆 チャレンジモード（${esc(fieldLabel())}）</h2>
     <div class="card-ui">
       <div class="scopebtns">
         <button id="kScore" class="${chalKind==='score'?'sel':''}">🎯 連続正解チャレンジ</button>
@@ -816,14 +830,14 @@ function renderChallengeHome(){
       <button class="bigbtn" id="chalStart">スタート!</button>
     </div>
     ${lbBoxHTML()}
-    ${selfBestHTML(chalKind)}`;
+    ${selfBestHTML(chalKindOf(chalKind))}`;
   document.getElementById('kScore').onclick=()=>{chalKind='score';renderChallengeHome();};
   document.getElementById('kTime').onclick=()=>{chalKind='time';renderChallengeHome();};
   document.getElementById('chalStart').onclick=startChallenge;
-  refreshLbBox(chalKind);
+  refreshLbBox(chalKindOf(chalKind));
 }
 function startChallenge(){
-  chal={kind:chalKind,queue:shuffle(ITEMS.slice()),idx:0,correct:0,t0:Date.now(),over:false};
+  chal={kind:chalKindOf(chalKind),queue:shuffle(fieldItems()),idx:0,correct:0,t0:Date.now(),over:false};
   nextChalQ();
 }
 function renderChalQuiz(el,it,progressText,timeLimitSec,onDone){
@@ -849,15 +863,15 @@ function renderChalQuiz(el,it,progressText,timeLimitSec,onDone){
   bindAnswer(el,choices,(ok,picked)=>finish(ok,false,picked));
 }
 function nextChalQ(){
-  if(chal.kind==='time'&&CHAL_TIME_LIMIT-(Date.now()-chal.t0)/1000<=0)return chalResult(true);
+  if(chalBase(chal.kind)==='time'&&CHAL_TIME_LIMIT-(Date.now()-chal.t0)/1000<=0)return chalResult(true);
   if(chal.idx>=chal.queue.length)return chalResult(true);
   const it=chal.queue[chal.idx], session=chal;
-  const timeLimitSec=chal.kind==='score'?CHAL_Q_SEC:Math.max(1,Math.ceil(CHAL_TIME_LIMIT-(Date.now()-chal.t0)/1000));
-  const progressText=chal.kind==='score'?`連続正解 ${chal.correct}問`:`正解 ${chal.correct}問`;
+  const timeLimitSec=chalBase(chal.kind)==='score'?CHAL_Q_SEC:Math.max(1,Math.ceil(CHAL_TIME_LIMIT-(Date.now()-chal.t0)/1000));
+  const progressText=chalBase(chal.kind)==='score'?`連続正解 ${chal.correct}問`:`正解 ${chal.correct}問`;
   chalPanel.innerHTML='<div id="cq"></div>';
   renderChalQuiz(document.getElementById('cq'),it,progressText,timeLimitSec,(ok,timedOut)=>{
     if(chal!==session||chal.over)return;
-    if(chal.kind==='time'&&timedOut){chalResult(true);return;}
+    if(chalBase(chal.kind)==='time'&&timedOut){chalResult(true);return;}
     if(ok){markMastered(it.id);chal.correct++;chal.idx++;nextChalQ();}
     else{state.weak[it.id]=2;save();updateWeakBadge();chalResult(false);}
   });
@@ -868,11 +882,11 @@ function chalResult(reachedEnd){
   chal.over=true;
   stopChalTimer();
   const correct=chal.correct, sec=Math.floor((Date.now()-chal.t0)/1000);
-  const rank=chalRank(chal.kind,correct,reachedEnd&&chal.kind==='score');
+  const rank=chalRank(chal.kind,correct,reachedEnd&&chalBase(chal.kind)==='score');
   pushBest(chal.kind,{correct,sec,rank});
   const lbSubmit=LB.currentUser()?LB.submitScore(chal.kind,correct,sec,rank):Promise.resolve();
-  const headline=reachedEnd?(chal.kind==='time'?'⏰ タイムアップ!':'🎉 コンプリート!'):'💥 ゲームオーバー';
-  const msg={SSS:'全問制覇!熱とエネルギーの伝説!',SS:'神域の連続正解!',S:'完璧!熱とエネルギーマスター!',A:'あと一歩で完全制覇!',B:'かなり定着してきた!',C:'弱点特訓で復習しよう!',D:'ドリルで基礎から固めよう!'}[rank];
+  const headline=reachedEnd?(chalBase(chal.kind)==='time'?'⏰ タイムアップ!':'🎉 コンプリート!'):'💥 ゲームオーバー';
+  const msg={SSS:`全問制覇!${fieldLabel()}の伝説!`,SS:'神域の連続正解!',S:`完璧!${fieldLabel()}マスター!`,A:'あと一歩で完全制覇!',B:'かなり定着してきた!',C:'弱点特訓で復習しよう!',D:'ドリルで基礎から固めよう!'}[rank];
   chalPanel.innerHTML=`
     <h2>結果発表</h2>
     <div class="card-ui" style="text-align:center">
@@ -903,18 +917,35 @@ const RUSH_DIFFS={
 const RUSH_Q_MS=15000;  // 1問の制限時間（オンライン対戦の4択と同じ15秒）
 /* 範囲：全部 → 前半・中盤・後半（単元の番号で分ける）→ 単元1つずつ。ランキングは範囲ごと（kind） */
 /* 前半・中盤・後半は fields.js の groups（オンライン対戦と共通）。ランキングの kind は rushG1〜rushG3 */
-const unitNo=cat=>parseInt(cat,10);
-const RUSH_SCOPES=[
-  {value:'all',label:`熱とエネルギー 全単元（${ITEMS.length}問）`,kind:'rushAll',match:()=>true},
-  ...RUSH_FIELDS[0].groups.map((g,i)=>{
-    const match=cat=>unitNo(cat)>=g.from&&unitNo(cat)<=g.to;
-    return {value:g.key,label:`${g.name}　${g.from}〜${g.to}（${ITEMS.filter(it=>match(it.cat)).length}問）`,kind:'rushG'+(i+1),match};
-  }),
-  ...CATEGORIES.map((c,i)=>({value:c.name,label:`${c.name}（${c.count}問）`,kind:'rush'+(i+1),match:cat=>cat===c.name}))
-];
+/* 波：全単元（rushW）→ 単元1つずつ（rushW1〜）。熱の kind は波を足す前と同じ（記録をそのまま使う） */
+const CFIELD=Object.fromEntries(CATEGORIES.map(c=>[c.name,c.field]));
+const countOf=match=>ITEMS.filter(it=>match(it.cat)).length;
+const RUSH_SCOPES_BY_FIELD={
+  heat:(()=>{
+    const cats=CATEGORIES.filter(c=>c.field==='heat');
+    const all=cat=>CFIELD[cat]==='heat';
+    return [
+      {value:'all',label:`熱とエネルギー 全単元（${countOf(all)}問）`,kind:'rushAll',match:all},
+      ...RUSH_FIELDS[0].groups.filter(g=>g.field==='heat'&&g.from).map((g,i)=>{
+        const names=new Set(g.decks.map(i=>RUSH_FIELDS[0].decks[i].name)), match=cat=>names.has(cat);
+        return {value:g.key,label:`${g.name}　${g.from}〜${g.to}（${countOf(match)}問）`,kind:'rushG'+(i+1),match};
+      }),
+      ...cats.map((c,i)=>({value:c.name,label:`${c.name}（${c.count}問）`,kind:'rush'+(i+1),match:cat=>cat===c.name}))
+    ];
+  })(),
+  wave:(()=>{
+    const cats=CATEGORIES.filter(c=>c.field==='wave');
+    const all=cat=>CFIELD[cat]==='wave';
+    return [
+      {value:'wall',label:`波 全単元（${countOf(all)}問）`,kind:'rushW',match:all},
+      ...cats.map((c,i)=>({value:c.name,label:`${c.name}（${c.count}問）`,kind:'rushW'+(i+1),match:cat=>cat===c.name}))
+    ];
+  })()
+};
+function rushScopes(){return RUSH_SCOPES_BY_FIELD[curField()];}
 const RUSH_CARDS=RUSH_FIELDS[0].decks.flatMap(d=>d.items);
 let rushScope='all', rush=null, lastRush=null;
-function rushScopeOf(v){return RUSH_SCOPES.find(s=>s.value===v)||RUSH_SCOPES[0];}
+function rushScopeOf(v){const s=rushScopes();return s.find(x=>x.value===v)||s[0];}
 function rushRank(correct){return correct>=50?'SS':correct>=30?'S':correct>=20?'A':correct>=10?'B':correct>=3?'C':'D';}
 /* カード1枚を出題の形に（選択肢の並びは毎回変える。fix のものはそのまま） */
 function rushQ(card){
@@ -929,7 +960,7 @@ function renderRushHome(){
     <h2>🏃 物理RUSH！</h2>
     <div class="card-ui" id="rushStartArea">
       <div class="muted">穴【？】に入る言葉を選ぼう。1問<b>15秒</b>、まちがえるとライフが減るよ。何問正解できるかな？ 範囲を選んで、難易度ボタンを押すとすぐスタート!</div>
-      <select class="genreSelect" id="rushScopeSel" style="margin-top:12px">${RUSH_SCOPES.map(s=>`<option value="${esc(s.value)}" ${s.value===rushScope?'selected':''}>${esc(s.label)}</option>`).join('')}</select>
+      <select class="genreSelect" id="rushScopeSel" style="margin-top:12px">${rushScopes().map(s=>`<option value="${esc(s.value)}" ${s.value===rushScopeOf(rushScope).value?'selected':''}>${esc(s.label)}</option>`).join('')}</select>
       <div class="eg-levelgrid">${Object.keys(RUSH_DIFFS).map(k=>{const d=RUSH_DIFFS[k];return `<button class="eg-levelbtn" data-diff="${k}"><span><span class="eg-lv-name">${d.label}</span><span class="eg-lv-sub">${d.sub}</span></span><span class="eg-lv-best">${k==='hard'?'🏆 全国ランキング対応':''}</span></button>`;}).join('')}</div>
     </div>
     ${lbBoxHTML()}
@@ -1133,8 +1164,38 @@ document.querySelectorAll('nav button').forEach(b=>{
   });
 });
 
+/* ================= 分野の切り替え（ヘッダー） ================= */
+const fieldSel=document.getElementById('fieldSelect');
+function refreshFieldSelect(){
+  fieldSel.innerHTML=FIELDS.map(f=>`<option value="${f.key}" ${f.key===curField()?'selected':''}>${esc(f.label)}</option>`).join('');
+  document.title=`物理基礎クエスト 〜${fieldLabel()}〜`;
+}
+function applyField(f){
+  state.field=f; save();
+  memoClearAdvanceTimer();
+  catDrill=null;
+  refreshFieldSelect();
+  const active=document.querySelector('.view.active').id.replace('view-','');
+  if(active==='home')renderHome();
+  if(active==='challenge')renderChallengeHome();
+  if(active==='rush')renderRushHome();
+}
+fieldSel.addEventListener('change',()=>{
+  const f=fieldSel.value;
+  const active=document.querySelector('.view.active').id.replace('view-','');
+  const playing=(active==='challenge'&&chal&&!chal.over)||(active==='rush'&&rush);
+  if(!playing)return applyField(f);
+  fieldSel.value=curField();  // 確認してから切り替える
+  confirmDialog(active==='rush'?'RUSHを終了して分野を切り替えますか？記録は保存されません。':'チャレンジを終了して分野を切り替えますか？記録は保存されません。',()=>{
+    if(active==='rush'){rushStop();rush=null;}
+    else{stopChalTimer();chal.over=true;chal=null;}
+    applyField(f);
+  });
+});
+
 /* ================= 起動 ================= */
 load();
+refreshFieldSelect();
 updateWeakBadge();
 refreshAnswerFxBtn();
 refreshAnswerAutoBtn();

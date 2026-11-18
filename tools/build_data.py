@@ -191,9 +191,20 @@ for no, name, chunks in UNITS:
     assert not missing, (no, missing)
     cats.append({"name": cat, "count": len(items) - start})
 
-data = {"unit": "熱とエネルギー", "categories": cats, "items": items}
+# 分野：熱（このファイル）と波（wave_data.py）。categories・items に field を付ける
+for x in cats + items:
+    x["field"] = "heat"
+sys.path.insert(0, __import__("os").path.dirname(__import__("os").path.abspath(__file__)))
+import wave_data
+wcats, witems = wave_data.build()
+cats += wcats
+items += witems
+
+data = {"fields": [{"key": "heat", "label": "熱とエネルギー"}, {"key": "wave", "label": "波"}],
+        "categories": cats, "items": items}
 open(OUT, "w", encoding="utf-8").write(
-    "/* 物理基礎クエスト 問題データ（R8 高1物理基礎テキスト ver.熱 の「Ⅲ 穴埋め問題」から build_data.py で生成） */\n"
+    "/* 物理基礎クエスト 問題データ（R8 高1物理基礎テキスト ver.熱 の「Ⅲ 穴埋め問題」と\n"
+    "   R8 高1物理基礎 波_冊子 の「Ⅱ 穴埋め問題」から tools/build_data.py で生成） */\n"
     "const DATA = " + json.dumps(data, ensure_ascii=False, indent=1) + ";\n")
 print(len(items), "items")
 for c in cats:
